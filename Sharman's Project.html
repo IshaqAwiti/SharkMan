@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sharman's Project</title>
+<meta name="theme-color" content="#0b2a3f">
+<style>
+:root{
+  --ink:#172b3a; --ink2:#44596b; --ink3:#7a8b99; --line:#dfe6ec; --paper:#fff; --list:#eef2f5;
+  --accent:#0e8a8a; --accent-d:#0a6b6b; --warn:#c77700; --bad:#c23b3b; --good:#1f8a4c;
+  --r:10px; --sh:0 1px 2px rgba(10,30,45,.18);
+  --font:"Inter","Segoe UI",system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  --hue:205;
+}
+*{box-sizing:border-box} html,body{height:100%;margin:0}
+body{font-family:var(--font);color:var(--ink);font-size:14px;line-height:1.4;-webkit-tap-highlight-color:transparent;
+  background:linear-gradient(135deg,hsl(var(--hue) 62% 30%),hsl(calc(var(--hue) + 40) 55% 24%));background-attachment:fixed;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#app{height:100%;display:flex;flex-direction:column}
+
+/* top bar */
+.top{display:flex;align-items:center;gap:10px;padding:8px 14px;background:rgba(6,24,38,.55);backdrop-filter:blur(8px);color:#fff;flex:none}
+.brand{display:flex;align-items:center;gap:9px;font-weight:700;font-size:16px;letter-spacing:.2px;white-space:nowrap}
+.brand .logo{width:28px;height:28px;border-radius:8px;background:#fff;display:grid;place-items:center;color:#0b2a3f}
+.brand .logo svg{width:18px;height:18px;stroke-width:2.2}
+.spacer{flex:1}
+.tbtn{background:rgba(255,255,255,.14);border:0;color:#fff;border-radius:8px;height:34px;min-width:34px;padding:0 10px;display:inline-flex;align-items:center;gap:6px}
+.tbtn:hover{background:rgba(255,255,255,.26)}
+.search{position:relative}
+.search input{height:34px;border-radius:8px;border:0;background:rgba(255,255,255,.16);color:#fff;padding:0 10px 0 32px;width:200px}
+.search input::placeholder{color:rgba(255,255,255,.7)}
+.search svg{position:absolute;left:9px;top:8px;width:17px;height:17px;color:#fff}
+.search input:focus{outline:2px solid #fff;background:rgba(255,255,255,.25)}
+.results{position:absolute;right:0;top:40px;width:340px;max-height:60vh;overflow:auto;background:#fff;color:var(--ink);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:30}
+.results button{display:block;width:100%;text-align:left;border:0;background:none;padding:9px 12px;border-bottom:1px solid var(--line)}
+.results button:hover{background:var(--list)}
+.results small{color:var(--ink3);display:block}
+
+/* tabs */
+.tabs{display:flex;gap:4px;padding:8px 14px 0;overflow-x:auto;flex:none;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{border:0;background:rgba(255,255,255,.14);color:#fff;border-radius:8px;padding:7px 13px;white-space:nowrap;font-weight:600;display:inline-flex;gap:7px;align-items:center}
+.tab:hover{background:rgba(255,255,255,.26)}
+.tab.on{background:#fff;color:var(--ink)}
+.tab .n{font-size:11px;background:rgba(0,0,0,.18);border-radius:10px;padding:0 6px;font-weight:700}
+.tab.on .n{background:var(--list);color:var(--ink2)}
+
+.stage{flex:1;min-height:0;position:relative}
+.boardhead{display:flex;align-items:center;gap:12px;padding:12px 14px 4px;color:#fff;flex-wrap:wrap}
+.boardhead h1{margin:0;font-size:19px}
+.boardhead .sub{opacity:.85;font-size:13px}
+.board{position:absolute;inset:44px 0 0 0;display:flex;gap:10px;padding:8px 14px 80px;overflow-x:auto;align-items:flex-start}
+.list{width:288px;flex:none;background:var(--list);border-radius:12px;max-height:100%;display:flex;flex-direction:column;box-shadow:var(--sh)}
+.lh{display:flex;align-items:center;gap:6px;padding:10px 10px 6px 12px}
+.lh h3{margin:0;font-size:14px;flex:1;cursor:text}
+.lh .cnt{font-size:12px;color:var(--ink3);font-weight:600}
+.lh .done-mark{color:var(--good)}
+.iconbtn{border:0;background:none;border-radius:6px;width:28px;height:28px;display:grid;place-items:center;color:var(--ink2)}
+.iconbtn:hover{background:rgba(0,0,0,.08)}
+.cards{overflow-y:auto;padding:2px 8px 4px;display:flex;flex-direction:column;gap:7px;min-height:12px}
+.cards.over{background:rgba(14,138,138,.12);border-radius:8px}
+.card{background:var(--paper);border-radius:9px;padding:9px 10px;box-shadow:var(--sh);cursor:pointer;position:relative;border:2px solid transparent}
+.card:hover{border-color:rgba(14,138,138,.45)}
+.card.dragging{opacity:.4}
+.card.isdone .ct{color:var(--ink3);text-decoration:line-through}
+.crow{display:flex;gap:8px;align-items:flex-start}
+.chk{width:18px;height:18px;border-radius:50%;border:2px solid #b8c4ce;background:#fff;flex:none;margin-top:1px;display:grid;place-items:center;padding:0}
+.chk:hover{border-color:var(--accent)}
+.chk.on{background:var(--good);border-color:var(--good);color:#fff}
+.chk svg{width:11px;height:11px;stroke-width:3.4;display:none}
+.chk.on svg{display:block}
+.ct{font-weight:600;flex:1;word-break:break-word}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:6px}
+.chip{font-size:11px;font-weight:700;padding:1px 8px;border-radius:10px;color:#fff;line-height:18px}
+.meta{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px;align-items:center}
+.badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;color:var(--ink2);background:var(--list);border-radius:6px;padding:1px 7px;font-weight:600}
+.badge svg{width:12px;height:12px}
+.badge.late{background:var(--bad);color:#fff}.badge.soon{background:#fbe4b8;color:#6b4300}.badge.ok{background:#d6f0e0;color:#14673a}
+.bar{height:6px;background:var(--list);border-radius:4px;overflow:hidden;margin-top:7px}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px}
+.bar.green i{background:var(--good)}
+.amt{font-size:15px;font-weight:700;margin-top:6px;display:flex;justify-content:space-between;align-items:baseline}
+.amt small{font-weight:500;color:var(--ink3);font-size:12px}
+.add{margin:2px 8px 8px;border:0;background:none;text-align:left;padding:7px 8px;border-radius:8px;color:var(--ink2);display:flex;gap:6px;align-items:center;font-weight:600}
+.add:hover{background:rgba(0,0,0,.07)}
+.composer{margin:2px 8px 8px}
+.composer textarea,.newlist input{width:100%;border:2px solid var(--accent);border-radius:8px;padding:8px;resize:none;font-weight:600;background:#fff}
+.composer .row{display:flex;gap:6px;margin-top:6px;align-items:center}
+.newlist{width:288px;flex:none;background:rgba(255,255,255,.22);border-radius:12px;padding:10px;color:#fff}
+.newlist button.ghost{width:100%;background:none;border:0;color:#fff;text-align:left;font-weight:600;display:flex;gap:6px;align-items:center;padding:2px}
+.newlist input{color:var(--ink)}
+.btn{border:0;border-radius:8px;padding:8px 14px;font-weight:700;background:var(--list);color:var(--ink)}
+.btn:hover{filter:brightness(.95)}
+.btn.p{background:var(--accent);color:#fff}.btn.p:hover{background:var(--accent-d);filter:none}
+.btn.d{background:#fbe3e3;color:var(--bad)}
+.btn.sm{padding:5px 10px;font-size:13px}
+
+/* panels (home, money) */
+.panel{position:absolute;inset:0;overflow-y:auto;padding:14px 14px 100px}
+.wrap{max-width:1100px;margin:0 auto}
+.hello{color:#fff;margin:2px 0 14px}
+.hello h1{margin:0;font-size:22px}.hello p{margin:3px 0 0;opacity:.85}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:12px}
+.tile{background:var(--paper);border-radius:12px;padding:14px;box-shadow:var(--sh);text-align:left;border:0;display:block;width:100%}
+button.tile:hover{outline:2px solid var(--accent)}
+.tile .k{font-size:12px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
+.tile .v{font-size:26px;font-weight:800;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12.5px;color:var(--ink2)}
+.v.bad{color:var(--bad)}.v.good{color:var(--good)}
+.cols{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:12px;margin-top:12px}
+.sec{min-width:0;background:var(--paper);border-radius:12px;padding:14px;box-shadow:var(--sh)}
+.sec h2{margin:0 0 8px;font-size:15px;display:flex;align-items:center;justify-content:space-between}
+.row-item{display:flex;align-items:center;gap:10px;padding:8px 6px;border-radius:8px;border:0;background:none;width:100%;text-align:left;border-bottom:1px solid var(--line)}
+.row-item:last-child{border-bottom:0}
+.row-item:hover{background:var(--list)}
+.row-item .grow{flex:1;min-width:0}
+.row-item .grow b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row-item .grow small{color:var(--ink3)}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.empty{color:var(--ink3);padding:14px 4px;text-align:center}
+.catbar{display:flex;align-items:center;gap:10px;margin:7px 0;font-size:13px}
+.catbar .nm{width:110px;font-weight:600}
+.catbar .tr{flex:1;height:9px;background:var(--list);border-radius:5px;overflow:hidden}
+.catbar .tr i{display:block;height:100%;border-radius:5px}
+.catbar .vv{width:72px;text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.monthnav{display:flex;align-items:center;gap:8px;color:#fff;margin-bottom:12px;flex-wrap:wrap}
+.monthnav h1{margin:0;font-size:20px;min-width:150px;text-align:center}
+.seg{display:inline-flex;background:rgba(255,255,255,.18);border-radius:8px;padding:2px}
+.seg button{border:0;background:none;color:#fff;padding:5px 11px;border-radius:6px;font-weight:600}
+.seg button.on{background:#fff;color:var(--ink)}
+.txday{font-size:12px;font-weight:700;color:var(--ink3);margin:12px 0 2px;text-transform:uppercase;letter-spacing:.4px}
+.txamt{font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.txamt.in{color:var(--good)}
+
+/* fab */
+.fab{position:fixed;right:18px;bottom:18px;height:54px;border-radius:27px;border:0;background:#fff;color:var(--accent-d);box-shadow:0 6px 18px rgba(0,0,0,.35);padding:0 20px 0 16px;font-weight:800;display:flex;align-items:center;gap:8px;z-index:20}
+.fab svg{width:22px;height:22px;stroke-width:2.6}
+.fab:hover{background:var(--list)}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(8,20,30,.6);display:flex;align-items:flex-start;justify-content:center;padding:4vh 12px;overflow-y:auto;z-index:50}
+.modal{background:#f6f8fa;border-radius:14px;width:100%;max-width:640px;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.4);position:relative}
+.modal h2{margin:0 0 4px;font-size:18px}
+.modal .x{position:absolute;right:10px;top:10px}
+.titlein{width:100%;border:2px solid transparent;background:transparent;font-size:18px;font-weight:700;padding:5px 8px;border-radius:8px;margin-left:-8px}
+.titlein:hover{background:#e9eef2}.titlein:focus{background:#fff;border-color:var(--accent);outline:0}
+.f{margin:12px 0}
+.f>label,.lab{display:block;font-size:12px;font-weight:700;color:var(--ink2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px}
+.f input,.f select,.f textarea,.inp{width:100%;border:1.5px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff}
+.f input:focus,.f select:focus,.f textarea:focus,.inp:focus{outline:0;border-color:var(--accent)}
+.f textarea{min-height:76px;resize:vertical}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.cli{display:flex;align-items:center;gap:8px;padding:4px 0}
+.cli input[type=text]{flex:1;border:0;background:none;padding:4px 6px;border-radius:6px}
+.cli input[type=text]:hover,.cli input[type=text]:focus{background:#fff;outline:0}
+.cli.d input[type=text]{text-decoration:line-through;color:var(--ink3)}
+.pickchip{border:2px solid transparent;border-radius:14px;padding:2px 10px;font-size:12px;font-weight:700;color:#fff;margin:0 4px 4px 0}
+.pickchip.off{opacity:.35}
+.tag-row{display:flex;flex-wrap:wrap}
+.pays{background:#fff;border-radius:8px;border:1.5px solid var(--line);padding:4px 10px;margin-top:6px}
+.pays .p{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--line)}
+.pays .p:last-child{border:0}
+.foot{display:flex;gap:8px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.catpick{display:flex;flex-wrap:wrap;gap:6px}
+.catpick button{border:1.5px solid var(--line);background:#fff;border-radius:16px;padding:5px 12px;font-weight:600;font-size:13px}
+.catpick button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.bigamt{font-size:34px;font-weight:800;text-align:center;border:0!important;background:#fff;border-radius:12px!important;padding:12px!important}
+.toast{position:fixed;left:50%;bottom:90px;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:20px;font-weight:600;z-index:90;box-shadow:0 6px 20px rgba(0,0,0,.35)}
+.menu{position:fixed;background:#fff;border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.3);padding:6px;z-index:60;min-width:170px}
+.menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:8px 10px;border-radius:6px;font-weight:600}
+.menu button:hover{background:var(--list)}
+.hint{font-size:12.5px;color:var(--ink3)}
+.saved{font-size:12px;opacity:.85}
+
+@media(max-width:760px){
+  .cols{grid-template-columns:1fr}
+  .search input{width:120px}
+  .list{width:82vw}
+  .newlist{width:82vw}
+  .brand span.t{display:none}
+  .results{position:fixed;left:10px;right:10px;width:auto;top:52px}
+  .two,.three{grid-template-columns:1fr 1fr}
+  .tile .v{font-size:20px}.grid{grid-template-columns:1fr 1fr;gap:8px}.tile{padding:11px}
+  .fab span{display:none}.fab{padding:0 16px;height:56px;width:56px;border-radius:28px;justify-content:center}
+  .catbar .nm{width:90px}
+}
+@media(prefers-reduced-motion:no-preference){.card,.tile{transition:outline-color .12s,border-color .12s}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+const SEED = {"v": 2, "settings": {"rate": 144.89, "opening": 0, "moveDate": "2026-11-30", "workLimit": 140, "name": "Sharman"}, "boards": [{"id": "prio", "name": "Priorities", "kind": "task", "hue": 212, "lists": [{"id": "prio_0", "name": "To do", "done": 0}, {"id": "prio_1", "name": "In progress", "done": 0}, {"id": "prio_2", "name": "Done", "done": 1}]}, {"id": "debts", "name": "Debts", "kind": "debt", "hue": 0, "lists": [{"id": "debts_0", "name": "Open", "done": 0}, {"id": "debts_1", "name": "Cleared", "done": 1}]}, {"id": "goals", "name": "Savings goals", "kind": "goal", "hue": 160, "lists": [{"id": "goals_0", "name": "Saving", "done": 0}, {"id": "goals_1", "name": "Reached", "done": 1}]}, {"id": "jobs", "name": "Jobs & work", "kind": "job", "hue": 262, "lists": [{"id": "jobs_0", "name": "Interested", "done": 0}, {"id": "jobs_1", "name": "Applied", "done": 0}, {"id": "jobs_2", "name": "Interview", "done": 0}, {"id": "jobs_3", "name": "Shift booked", "done": 0}, {"id": "jobs_4", "name": "Shift done", "done": 1}, {"id": "jobs_5", "name": "Closed", "done": 1}]}, {"id": "bills", "name": "Bills & dates", "kind": "bill", "hue": 30, "lists": [{"id": "bills_0", "name": "Upcoming", "done": 0}, {"id": "bills_1", "name": "Done", "done": 1}]}, {"id": "move", "name": "Moving", "kind": "task", "hue": 190, "lists": [{"id": "move_0", "name": "Documents & admin", "done": 0}, {"id": "move_1", "name": "Buy for the room", "done": 0}, {"id": "move_2", "name": "Update my address", "done": 0}, {"id": "move_3", "name": "Done", "done": 1}]}, {"id": "soest", "name": "Studies: Soest", "kind": "course", "hue": 230, "lists": [{"id": "soest_0", "name": "Semester 1", "done": 0}, {"id": "soest_1", "name": "Semester 2", "done": 0}, {"id": "soest_2", "name": "Semester 3", "done": 0}, {"id": "soest_3", "name": "Semester 4", "done": 0}, {"id": "soest_4", "name": "Semester 5", "done": 0}, {"id": "soest_5", "name": "Semester 6", "done": 0}, {"id": "soest_6", "name": "Semester 7", "done": 0}]}, {"id": "ouk", "name": "Studies: OUK", "kind": "course", "hue": 275, "lists": [{"id": "ouk_0", "name": "Year 1 Sem 1", "done": 0}, {"id": "ouk_1", "name": "Year 1 Sem 2", "done": 0}, {"id": "ouk_2", "name": "Year 2 Sem 1", "done": 0}, {"id": "ouk_3", "name": "Year 2 Sem 2", "done": 0}, {"id": "ouk_4", "name": "Year 3 Sem 1", "done": 0}, {"id": "ouk_5", "name": "Year 3 Sem 2", "done": 0}, {"id": "ouk_6", "name": "Year 3 Sem 3", "done": 0}, {"id": "ouk_7", "name": "Year 4 Sem 1", "done": 0}, {"id": "ouk_8", "name": "Year 4 Sem 2", "done": 0}]}, {"id": "books", "name": "Books", "kind": "book", "hue": 340, "lists": [{"id": "books_0", "name": "To buy", "done": 0}, {"id": "books_1", "name": "Reading", "done": 0}, {"id": "books_2", "name": "Finished", "done": 1}]}, {"id": "fun", "name": "Entertainment", "kind": "fun", "hue": 320, "lists": [{"id": "fun_0", "name": "Podcasts", "done": 0}, {"id": "fun_1", "name": "Games", "done": 0}, {"id": "fun_2", "name": "Watch & listen later", "done": 0}]}], "cards": [{"id": "c1", "b": "prio", "l": "prio_1", "t": "Secure suitable housing before the end of November 2026", "d": "", "due": "2026-11-30", "labels": ["Housing"], "cl": [], "done": false, "f": {}}, {"id": "c2", "b": "prio", "l": "prio_1", "t": "Follow up on WG-Gesucht messages and housing applications", "d": "", "due": "", "labels": ["Housing"], "cl": [], "done": false, "f": {}}, {"id": "c3", "b": "prio", "l": "prio_1", "t": "Coordinate housing locations with potential Amazon job opportunities and university commuting", "d": "", "due": "", "labels": ["Housing"], "cl": [], "done": false, "f": {}}, {"id": "c4", "b": "prio", "l": "prio_0", "t": "Prepare for relocation from Brühl", "d": "", "due": "", "labels": ["Housing"], "cl": [], "done": false, "f": {}}, {"id": "c5", "b": "prio", "l": "prio_2", "t": "Receive and set up the Motorola Edge 70 Fusion", "d": "", "due": "", "labels": ["Technology"], "cl": [], "done": true, "f": {}}, {"id": "c6", "b": "prio", "l": "prio_2", "t": "Complete the Android-to-Android transfer", "d": "", "due": "", "labels": ["Technology"], "cl": [], "done": true, "f": {}}, {"id": "c7", "b": "prio", "l": "prio_0", "t": "Write to Safaricom's team about the Kenyan eSIM (after moving out)", "d": "", "due": "", "labels": ["Technology"], "cl": [], "done": false, "f": {}}, {"id": "c8", "b": "prio", "l": "prio_1", "t": "Follow up: Amazon Paderborn (call to enquire)", "d": "", "due": "", "labels": ["Career"], "cl": [], "done": false, "f": {}}, {"id": "c9", "b": "prio", "l": "prio_1", "t": "Waiting to hear back from DHL", "d": "", "due": "", "labels": ["Career"], "cl": [], "done": false, "f": {}}, {"id": "c10", "b": "debts", "l": "debts_0", "t": "Shilla", "d": "", "due": "", "labels": ["Other loan"], "cl": [], "done": false, "f": {"amount": 35000, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c11", "b": "debts", "l": "debts_0", "t": "Edu", "d": "", "due": "", "labels": ["Other loan"], "cl": [], "done": false, "f": {"amount": 45500, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c12", "b": "debts", "l": "debts_0", "t": "Chapeo", "d": "", "due": "", "labels": ["Other loan"], "cl": [], "done": false, "f": {"amount": 24680, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c13", "b": "debts", "l": "debts_0", "t": "Veev", "d": "", "due": "", "labels": ["Other loan"], "cl": [], "done": false, "f": {"amount": 2000, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c14", "b": "debts", "l": "debts_0", "t": "Hustler", "d": "", "due": "", "labels": ["Other loan"], "cl": [], "done": false, "f": {"amount": 872, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c15", "b": "debts", "l": "debts_0", "t": "Tala", "d": "", "due": "", "labels": ["Other loan"], "cl": [], "done": false, "f": {"amount": 1478, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c16", "b": "debts", "l": "debts_0", "t": "I&M", "d": "Balance before the KSh 734 payment. It is now 11,900.", "due": "", "labels": ["Other loan"], "cl": [], "done": false, "f": {"amount": 12634, "cur": "KES", "extra": 0, "pays": [{"date": "2026-10-31", "amt": 734}]}}, {"id": "c17", "b": "debts", "l": "debts_0", "t": "Sister", "d": "", "due": "", "labels": ["Family loan"], "cl": [], "done": false, "f": {"amount": 134835, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c18", "b": "debts", "l": "debts_0", "t": "Edna (sister)", "d": "", "due": "", "labels": ["Family loan"], "cl": [], "done": false, "f": {"amount": 4000, "cur": "KES", "extra": 0, "pays": []}}, {"id": "c19", "b": "debts", "l": "debts_0", "t": "Sister (health insurance)", "d": "Health insurance paid by your sister (289.94 + 14.50)", "due": "", "labels": ["Family loan"], "cl": [], "done": false, "f": {"amount": 304.44, "cur": "EUR", "extra": 0, "pays": []}}, {"id": "c20", "b": "debts", "l": "debts_0", "t": "Klarna (phone)", "d": "Phone 299.99 plus 6.99 extension", "due": "2027-01-05", "labels": ["Credit / BNPL"], "cl": [], "done": false, "f": {"amount": 306.98, "cur": "EUR", "extra": 0, "pays": []}}, {"id": "c21", "b": "debts", "l": "debts_1", "t": "Klarna (phone cover)", "d": "", "due": "2026-12-05", "labels": ["Credit / BNPL"], "cl": [], "done": true, "f": {"amount": 10.95, "cur": "EUR", "extra": 0, "pays": [{"date": "2026-11-10", "amt": 10.95}]}}, {"id": "c22", "b": "debts", "l": "debts_0", "t": "Sister (move money)", "d": "", "due": "", "labels": ["Family loan"], "cl": [], "done": false, "f": {"amount": 450, "cur": "EUR", "extra": 0, "pays": []}}, {"id": "c23", "b": "goals", "l": "goals_0", "t": "Phone", "d": "Bought: Motorola Edge 70 Fusion, 299.99 EUR", "due": "", "labels": ["High"], "cl": [], "done": false, "f": {"target": 0, "saved": 0}}, {"id": "c24", "b": "goals", "l": "goals_0", "t": "Move fund", "d": "Account: N26 Space", "due": "2026-11-30", "labels": ["High"], "cl": [], "done": false, "f": {"target": 1000, "saved": 0}}, {"id": "c25", "b": "goals", "l": "goals_0", "t": "Südwestfalen semester fee (January)", "d": "Account: Targobank. Winter 2026/27 was 339.80 EUR.", "due": "2027-01-31", "labels": ["High"], "cl": [], "done": false, "f": {"target": 340, "saved": 0}}, {"id": "c26", "b": "goals", "l": "goals_0", "t": "OUK year 2 fees (one semester)", "d": "Account: Wise. KSh 7,900 to register, each semester is KSh 39,500.", "due": "2027-01-01", "labels": ["Medium"], "cl": [], "done": false, "f": {"target": 273, "saved": 0}}, {"id": "c27", "b": "goals", "l": "goals_0", "t": "Emergency savings", "d": "Account: Targobank", "due": "", "labels": ["High"], "cl": [], "done": false, "f": {"target": 200, "saved": 0}}, {"id": "c28", "b": "goals", "l": "goals_0", "t": "Education expenses", "d": "Account: N26", "due": "", "labels": ["Medium"], "cl": [], "done": false, "f": {"target": 150, "saved": 0}}, {"id": "c29", "b": "jobs", "l": "jobs_4", "t": "GLS Bornheim", "d": "Logistics assistant / order picker (via jobvalley)\nFirst shift, 10:15 to 15:00. About 10 euros was taken for the vest and hat. Paid to N26.", "due": "2026-10-26", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 4.75, "paid": 0}}, {"id": "c30", "b": "jobs", "l": "jobs_4", "t": "GLS Bornheim", "d": "Logistics assistant / order picker (via jobvalley)\n10:00 to 15:00. Paid to N26.", "due": "2026-11-02", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 5, "paid": 0}}, {"id": "c31", "b": "jobs", "l": "jobs_4", "t": "GLS Bornheim", "d": "Logistics assistant / order picker (via jobvalley)\n10:00 to 15:00. Paid to N26.", "due": "2026-11-03", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 5, "paid": 0}}, {"id": "c32", "b": "jobs", "l": "jobs_4", "t": "GLS Bornheim", "d": "Logistics assistant / order picker (via jobvalley)\n10:00 to 15:00. Paid to N26.", "due": "2026-11-05", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 5, "paid": 0}}, {"id": "c33", "b": "jobs", "l": "jobs_4", "t": "GLS Bornheim", "d": "Logistics assistant / order picker (via jobvalley)\n10:00 to 15:00. Paid to N26.", "due": "2026-11-06", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 5, "paid": 0}}, {"id": "c34", "b": "jobs", "l": "jobs_5", "t": "Amazon (Troisdorf)", "d": "Date: 2026-11-04\nWarehouse\nAppointment cancelled.", "due": "", "labels": ["Interview"], "cl": [], "done": true, "f": {"jtype": "Interview / Appointment", "wage": 16.48, "hours": 0, "paid": 0}}, {"id": "c35", "b": "jobs", "l": "jobs_2", "t": "DHL (Euskirchen)", "d": "Date: 2026-10-30\nWarehouse\nAppointment done. Waiting to hear back. Paid to Targobank.", "due": "", "labels": ["Interview"], "cl": [], "done": false, "f": {"jtype": "Interview / Appointment", "wage": 17.2, "hours": 0, "paid": 0}}, {"id": "c36", "b": "jobs", "l": "jobs_0", "t": "DHL (Euskirchen)", "d": "Warehouse shift, 17:00 to 21:00\nShift 17:00 to 21:00, considered after the appointment. Not confirmed yet. Paid to Targobank.", "due": "", "labels": ["Shift"], "cl": [], "done": false, "f": {"jtype": "Shift", "wage": 17.2, "hours": 4, "paid": 0}}, {"id": "c37", "b": "jobs", "l": "jobs_4", "t": "GLS Bornheim", "d": "Logistics assistant / order picker (via jobvalley)\n10:00 to 15:00. Paid to N26.", "due": "2026-11-13", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 5, "paid": 0}}, {"id": "c38", "b": "jobs", "l": "jobs_1", "t": "Netto Marken-Discount (Hamm)", "d": "Part-time assistant, 20 hours per week (shelf stocking, loading and unloading)\nApplication sent.", "due": "", "labels": ["Application"], "cl": [], "done": false, "f": {"jtype": "Application", "wage": 0, "hours": 0, "paid": 0}}, {"id": "c39", "b": "jobs", "l": "jobs_1", "t": "Amazon (Paderborn)", "d": "Warehouse\nYou will call them to enquire.", "due": "", "labels": ["Application"], "cl": [], "done": false, "f": {"jtype": "Application", "wage": 0, "hours": 0, "paid": 0}}, {"id": "c40", "b": "bills", "l": "bills_0", "t": "OUK semester starts: registration fee", "d": "", "due": "2027-01-01", "labels": ["Bill"], "cl": [], "done": false, "f": {"amount": 7900, "cur": "KES"}}, {"id": "c41", "b": "bills", "l": "bills_0", "t": "Target date to move out of Brühl", "d": "", "due": "2026-11-30", "labels": ["Reminder"], "cl": [], "done": false, "f": {"amount": 0, "cur": "EUR"}}, {"id": "c42", "b": "bills", "l": "bills_0", "t": "Visa valid until", "d": "", "due": "2027-09-13", "labels": ["Document deadline"], "cl": [], "done": false, "f": {"amount": 0, "cur": "EUR"}}, {"id": "c43", "b": "bills", "l": "bills_1", "t": "Klarna: phone cover due", "d": "", "due": "2026-12-05", "labels": ["Bill"], "cl": [], "done": true, "f": {"amount": 10.95, "cur": "EUR"}}, {"id": "c44", "b": "bills", "l": "bills_0", "t": "jobvalley payday", "d": "", "due": "2026-12-15", "labels": ["Reminder"], "cl": [], "done": false, "f": {"amount": 0, "cur": "EUR"}}, {"id": "c45", "b": "bills", "l": "bills_0", "t": "Klarna: phone due", "d": "", "due": "2027-01-05", "labels": ["Bill"], "cl": [], "done": false, "f": {"amount": 306.98, "cur": "EUR"}}, {"id": "c46", "b": "bills", "l": "bills_0", "t": "Foreigners' office: residence permit documents", "d": "No date yet. Add one when you have it.", "due": "", "labels": ["Document deadline"], "cl": [], "done": false, "f": {}}, {"id": "c47", "b": "bills", "l": "bills_0", "t": "Move into the Hamm room", "d": "Rent 300 EUR first month, deposit 150 EUR.", "due": "2026-11-30", "labels": ["Housing"], "cl": [], "done": false, "f": {}}, {"id": "c48", "b": "move", "l": "move_0", "t": "Wohnungsgeberbestätigung (from the landlord)", "d": "Needed for: Anmeldung at the new address", "due": "", "labels": ["Document"], "cl": [], "done": false, "f": {}}, {"id": "c49", "b": "move", "l": "move_0", "t": "Rental contract", "d": "Needed for: Deposit and Anmeldung", "due": "", "labels": ["Document"], "cl": [], "done": false, "f": {}}, {"id": "c50", "b": "move", "l": "move_0", "t": "Anmeldung at the new town hall", "d": "Needed for: Within 14 days of moving in", "due": "", "labels": ["Document"], "cl": [], "done": false, "f": {}}, {"id": "c51", "b": "move", "l": "move_0", "t": "Tell the foreigners' office about the move", "d": "Needed for: Your residence permit stays valid at the right office", "due": "", "labels": ["Document"], "cl": [], "done": false, "f": {}}, {"id": "c52", "b": "move", "l": "move_0", "t": "Update address with the university and employers", "d": "Needed for: Post and payroll", "due": "", "labels": ["Document"], "cl": [], "done": false, "f": {}}, {"id": "c53", "b": "move", "l": "move_0", "t": "Update address with banks (N26, Wise, Targobank)", "d": "Needed for: Cards and letters", "due": "", "labels": ["Document"], "cl": [], "done": false, "f": {}}, {"id": "c54", "b": "move", "l": "move_1", "t": "Duvet and pillow", "d": "", "due": "", "labels": ["Bedroom"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c55", "b": "move", "l": "move_1", "t": "Bed sheets and covers", "d": "", "due": "", "labels": ["Bedroom"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c56", "b": "move", "l": "move_1", "t": "Towels", "d": "", "due": "", "labels": ["Bathroom"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c57", "b": "move", "l": "move_1", "t": "Toiletries", "d": "", "due": "", "labels": ["Bathroom"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c58", "b": "move", "l": "move_1", "t": "Slippers", "d": "", "due": "", "labels": ["Bathroom"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c59", "b": "move", "l": "move_1", "t": "Plates, bowls, cups and cutlery", "d": "", "due": "", "labels": ["Kitchen"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c60", "b": "move", "l": "move_1", "t": "Pot and frying pan", "d": "", "due": "", "labels": ["Kitchen"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c61", "b": "move", "l": "move_1", "t": "Kettle or toaster", "d": "", "due": "", "labels": ["Kitchen"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c62", "b": "move", "l": "move_1", "t": "Food storage boxes", "d": "", "due": "", "labels": ["Kitchen"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c63", "b": "move", "l": "move_1", "t": "Cleaning supplies", "d": "", "due": "", "labels": ["Cleaning"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c64", "b": "move", "l": "move_1", "t": "Laundry basket and detergent", "d": "", "due": "", "labels": ["Cleaning"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c65", "b": "move", "l": "move_1", "t": "Clothes hangers", "d": "", "due": "", "labels": ["Bedroom"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c66", "b": "move", "l": "move_1", "t": "Desk lamp", "d": "", "due": "", "labels": ["Study"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c67", "b": "move", "l": "move_1", "t": "Extension cord and plug adapter", "d": "", "due": "", "labels": ["Electronics"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c68", "b": "move", "l": "move_1", "t": "Power bank", "d": "", "due": "", "labels": ["Electronics"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c69", "b": "move", "l": "move_1", "t": "Winter jacket, gloves and scarf", "d": "", "due": "", "labels": ["Clothing"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c70", "b": "move", "l": "move_1", "t": "Umbrella", "d": "", "due": "", "labels": ["Clothing"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c71", "b": "move", "l": "move_1", "t": "Backpack for the commute", "d": "", "due": "", "labels": ["Study"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c72", "b": "move", "l": "move_1", "t": "Folder for documents", "d": "", "due": "", "labels": ["Documents"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c73", "b": "move", "l": "move_1", "t": "Alarm clock", "d": "", "due": "", "labels": ["Bedroom"], "cl": [], "done": false, "f": {"est": 0}}, {"id": "c74", "b": "move", "l": "move_2", "t": "N26", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c75", "b": "move", "l": "move_2", "t": "ING", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c76", "b": "move", "l": "move_2", "t": "Targobank", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c77", "b": "move", "l": "move_2", "t": "Wise", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c78", "b": "move", "l": "move_2", "t": "ALDI TALK", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c79", "b": "move", "l": "move_2", "t": "Manchester City account", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c80", "b": "move", "l": "move_2", "t": "MediaMarkt", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c81", "b": "move", "l": "move_2", "t": "Klarna", "d": "", "due": "", "labels": ["Address"], "cl": [], "done": false, "f": {}}, {"id": "c82", "b": "soest", "l": "soest_0", "t": "International English Communication and Self-Management", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Current", "grade": "", "exam": ""}}, {"id": "c83", "b": "soest", "l": "soest_0", "t": "Business Administration I", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Current", "grade": "", "exam": ""}}, {"id": "c84", "b": "soest", "l": "soest_0", "t": "Financial Accounting", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Current", "grade": "", "exam": ""}}, {"id": "c85", "b": "soest", "l": "soest_0", "t": "Business Mathematics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Current", "grade": "", "exam": ""}}, {"id": "c86", "b": "soest", "l": "soest_0", "t": "Management Information Systems", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Current", "grade": "", "exam": ""}}, {"id": "c87", "b": "soest", "l": "soest_0", "t": "IT-Introduction", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Current", "grade": "", "exam": ""}}, {"id": "c88", "b": "soest", "l": "soest_1", "t": "Communication in Global Business", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c89", "b": "soest", "l": "soest_1", "t": "Business Administration II", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c90", "b": "soest", "l": "soest_1", "t": "Cost Accounting", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c91", "b": "soest", "l": "soest_1", "t": "Microeconomics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c92", "b": "soest", "l": "soest_1", "t": "Problem Solving Using Spreadsheet Software", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c93", "b": "soest", "l": "soest_1", "t": "Data Management", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c94", "b": "soest", "l": "soest_2", "t": "Competence in Business Activities", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c95", "b": "soest", "l": "soest_2", "t": "Corporate Finance", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c96", "b": "soest", "l": "soest_2", "t": "Business-to-Consumer Marketing", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c97", "b": "soest", "l": "soest_2", "t": "Macroeconomics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c98", "b": "soest", "l": "soest_2", "t": "Entrepreneurship and Innovation", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c99", "b": "soest", "l": "soest_2", "t": "Enterprise Resource Planning I", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c100", "b": "soest", "l": "soest_3", "t": "English for Academic Purposes", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c101", "b": "soest", "l": "soest_3", "t": "Business-to-Business Marketing", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c102", "b": "soest", "l": "soest_3", "t": "Logistics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c103", "b": "soest", "l": "soest_3", "t": "Business Law", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c104", "b": "soest", "l": "soest_3", "t": "E-Business / Web Development", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c105", "b": "soest", "l": "soest_3", "t": "Enterprise Resource Planning II", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c106", "b": "soest", "l": "soest_4", "t": "Advanced English Language and Academic Competence", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c107", "b": "soest", "l": "soest_4", "t": "Controlling & Auditing", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c108", "b": "soest", "l": "soest_4", "t": "International Management", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c109", "b": "soest", "l": "soest_4", "t": "BA Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c110", "b": "soest", "l": "soest_4", "t": "BA Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c111", "b": "soest", "l": "soest_4", "t": "IT Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c112", "b": "soest", "l": "soest_5", "t": "Advanced Competence in Academic Writing and Presenting", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c113", "b": "soest", "l": "soest_5", "t": "BA Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c114", "b": "soest", "l": "soest_5", "t": "BA Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c115", "b": "soest", "l": "soest_5", "t": "BA Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c116", "b": "soest", "l": "soest_5", "t": "IT Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c117", "b": "soest", "l": "soest_5", "t": "IT Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c118", "b": "soest", "l": "soest_6", "t": "BA Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c119", "b": "soest", "l": "soest_6", "t": "BA / IT Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c120", "b": "soest", "l": "soest_6", "t": "BA / IT Elective", "d": "", "due": "", "labels": ["Elective"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c121", "b": "soest", "l": "soest_6", "t": "Final Thesis + Colloquium", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c122", "b": "ouk", "l": "ouk_0", "t": "CSC 101 Introduction to Computing", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "D", "exam": ""}}, {"id": "c123", "b": "ouk", "l": "ouk_0", "t": "CSF 101 Digital Markets Infrastructure", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "C", "exam": ""}}, {"id": "c124", "b": "ouk", "l": "ouk_0", "t": "CSF 123 Physics for Computing", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "C", "exam": ""}}, {"id": "c125", "b": "ouk", "l": "ouk_0", "t": "MAT 101 Foundations of Mathematics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "B", "exam": ""}}, {"id": "c126", "b": "ouk", "l": "ouk_0", "t": "BEB 105 IT Entrepreneurship", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "B", "exam": ""}}, {"id": "c127", "b": "ouk", "l": "ouk_1", "t": "CSC 102 Structured Programming", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "A", "exam": ""}}, {"id": "c128", "b": "ouk", "l": "ouk_1", "t": "CSC 104 Data Structures and Algorithms", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "A", "exam": ""}}, {"id": "c129", "b": "ouk", "l": "ouk_1", "t": "CSC 108 Computer Networks", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "C", "exam": ""}}, {"id": "c130", "b": "ouk", "l": "ouk_1", "t": "MAT 102 Differential and Integral Calculus", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "A", "exam": ""}}, {"id": "c131", "b": "ouk", "l": "ouk_1", "t": "MAT 106 Discrete Mathematics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": true, "f": {"status": "Passed", "grade": "B", "exam": ""}}, {"id": "c132", "b": "ouk", "l": "ouk_2", "t": "CSC 201 Computer Forensics Investigations", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c133", "b": "ouk", "l": "ouk_2", "t": "CSC 209 Database Systems", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c134", "b": "ouk", "l": "ouk_2", "t": "CSC 211 Operating Systems", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c135", "b": "ouk", "l": "ouk_2", "t": "CSF 226 Applied Project", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c136", "b": "ouk", "l": "ouk_2", "t": "SST 201 Probability and Statistics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c137", "b": "ouk", "l": "ouk_3", "t": "CSC 202 Software Engineering", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c138", "b": "ouk", "l": "ouk_3", "t": "CSC 203 Web and Service Programming", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c139", "b": "ouk", "l": "ouk_3", "t": "CSF 202 Digital Forensic Tools and Technologies", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c140", "b": "ouk", "l": "ouk_3", "t": "CSF 204 Human Computer Interaction", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c141", "b": "ouk", "l": "ouk_3", "t": "DSC 202 Machine Learning", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c142", "b": "ouk", "l": "ouk_4", "t": "CSF 301 Computer Network Security", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c143", "b": "ouk", "l": "ouk_4", "t": "CSF 303 Penetration Testing and Ethical Hacking", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c144", "b": "ouk", "l": "ouk_4", "t": "CSF 307 Cryptography", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c145", "b": "ouk", "l": "ouk_4", "t": "CSF 309/CSF 103 IoT and Security", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c146", "b": "ouk", "l": "ouk_4", "t": "UCU 311 Introduction to Philosophy and Critical Thinking", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c147", "b": "ouk", "l": "ouk_5", "t": "CSC 308 Distributed Systems", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c148", "b": "ouk", "l": "ouk_5", "t": "CSF 302 Advanced Computer Forensics", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c149", "b": "ouk", "l": "ouk_5", "t": "CSF 304 Malware Detection and Analysis", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c150", "b": "ouk", "l": "ouk_5", "t": "CSF 306 Information Security Management", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c151", "b": "ouk", "l": "ouk_5", "t": "CSF 308 Web Security and Privacy", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c152", "b": "ouk", "l": "ouk_6", "t": "CSF 327 Industrial Attachment", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c153", "b": "ouk", "l": "ouk_7", "t": "CSF 400 Final Year Project", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c154", "b": "ouk", "l": "ouk_7", "t": "CSF 411 Information Systems Control and Audit", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c155", "b": "ouk", "l": "ouk_7", "t": "CSF 412 Secure Software Development", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c156", "b": "ouk", "l": "ouk_7", "t": "CSF 414 Embedded Systems and Mobile OS Programming", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c157", "b": "ouk", "l": "ouk_7", "t": "CSF 416 Cyber Security Law, Ethics and Policies", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c158", "b": "ouk", "l": "ouk_8", "t": "CSF 420 Database and Data Security", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c159", "b": "ouk", "l": "ouk_8", "t": "CSF 421 Security Analytics and Visualization", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c160", "b": "ouk", "l": "ouk_8", "t": "CSF 422 Advanced Information Security Management", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c161", "b": "ouk", "l": "ouk_8", "t": "CSF 424 Emerging Cybersecurity Technologies and Digital Forensic Boot Camps", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c162", "b": "ouk", "l": "ouk_8", "t": "CSF 428 Network Design, Implementation and Management", "d": "", "due": "", "labels": ["Core"], "cl": [], "done": false, "f": {"status": "Planned", "grade": "", "exam": ""}}, {"id": "c163", "b": "books", "l": "books_1", "t": "Grit", "d": "", "due": "", "labels": ["Psychology"], "cl": [], "done": false, "f": {"author": "Angela Duckworth"}}, {"id": "c193", "b": "prio", "l": "prio_0", "t": "Visit the house in Meden for a viewing", "d": "This weekend (Saturday 28 or Sunday 29 Nov). Set the exact day and time once confirmed.", "due": "2026-11-28", "labels": ["Housing"], "cl": [], "done": false, "f": {}}, {"id": "c194", "b": "prio", "l": "prio_0", "t": "Return the book to the library", "d": "Library due fees already cost 1.50 EUR once.", "due": "2026-12-11", "labels": ["Errands"], "cl": [], "done": false, "f": {}}, {"id": "c195", "b": "jobs", "l": "jobs_4", "t": "G3", "d": "11:00 to 19:30 (8.5 h planned). Arrived 49 minutes late, so about 7 h 41 min worked.", "due": "2026-11-24", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 7.68, "paid": 0}}, {"id": "c196", "b": "jobs", "l": "jobs_3", "t": "G3", "d": "11:00 to 19:30. Be on time.", "due": "2026-11-27", "labels": ["Shift"], "cl": [], "done": false, "f": {"jtype": "Shift", "wage": 15.33, "hours": 8.5, "paid": 0}}, {"id": "c197", "b": "fun", "l": "fun_1", "t": "PUBG", "d": "", "due": "", "labels": ["Game"], "cl": [], "done": false, "f": {"budget": 0, "sessions": []}}, {"id": "c198", "b": "fun", "l": "fun_1", "t": "Chess", "d": "", "due": "", "labels": ["Game"], "cl": [], "done": false, "f": {"budget": 0, "sessions": []}}, {"id": "c199", "b": "fun", "l": "fun_1", "t": "Top Eleven", "d": "", "due": "", "labels": ["Game"], "cl": [], "done": false, "f": {"budget": 0, "sessions": []}}], "tx": [{"id": "t164", "date": "2026-10-23", "type": "in", "cat": "Wages", "desc": "Helpling job (paid)", "amt": 33.02, "cur": "EUR", "status": "Paid", "method": "Wise", "note": ""}, {"id": "t165", "date": "2026-10-31", "type": "out", "cat": "Debt repayment", "desc": "I&M loan repayment (KSh 734 received)", "amt": 734, "cur": "KES", "status": "Paid", "method": "Wise", "note": "Sent as 7 euro from Wise; 734 KSh reached the loan."}, {"id": "t166", "date": "2026-10-31", "type": "out", "cat": "Miscellaneous", "desc": "Wise charge on the I&M transfer", "amt": 1.93, "cur": "EUR", "status": "Paid", "method": "Wise", "note": "The rest of the 7 euro (7 minus about 5.07)."}, {"id": "t167", "date": "2026-10-31", "type": "out", "cat": "Miscellaneous", "desc": "Sent to a friend", "amt": 4, "cur": "EUR", "status": "Paid", "method": "Wise", "note": ""}, {"id": "t168", "date": "2026-10-31", "type": "out", "cat": "Miscellaneous", "desc": "Sent to my brother", "amt": 5.5, "cur": "EUR", "status": "Paid", "method": "Wise", "note": ""}, {"id": "t169", "date": "2026-10-31", "type": "out", "cat": "Phone", "desc": "Okoa Jahazi repayment (sent to myself first)", "amt": 6, "cur": "EUR", "status": "Paid", "method": "Wise", "note": ""}, {"id": "t170", "date": "2026-10-31", "type": "out", "cat": "Miscellaneous", "desc": "Sent to a friend", "amt": 5, "cur": "EUR", "status": "Paid", "method": "Wise", "note": ""}, {"id": "t171", "date": "2026-10-31", "type": "in", "cat": "Other income", "desc": "Wise interest", "amt": 0.02, "cur": "EUR", "status": "Paid", "method": "Wise", "note": ""}, {"id": "t172", "date": "2026-11-09", "type": "in", "cat": "Wages", "desc": "Helpling job (paid)", "amt": 34.91, "cur": "EUR", "status": "Paid", "method": "Wise", "note": ""}, {"id": "t173", "date": "2026-11-13", "type": "in", "cat": "Wages", "desc": "GLS pay (shift 26 Oct)", "amt": 72.82, "cur": "EUR", "status": "Paid", "method": "N26", "note": "4h45 at 15.33 is 72.82, minus about 10 for the vest and hat."}, {"id": "t174", "date": "2026-11-12", "type": "in", "cat": "Other income", "desc": "Sister: money for the move (added to her loan)", "amt": 450, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t175", "date": "2026-11-10", "type": "out", "cat": "Debt repayment", "desc": "Klarna: phone cover", "amt": 10.95, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t176", "date": "2026-11-10", "type": "out", "cat": "Miscellaneous", "desc": "Beer at REWE", "amt": 3.48, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t177", "date": "2026-11-11", "type": "out", "cat": "Phone", "desc": "Network charge", "amt": 9.95, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t178", "date": "2026-11-11", "type": "out", "cat": "Miscellaneous", "desc": "Beer", "amt": 8, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t179", "date": "2026-11-12", "type": "out", "cat": "Phone", "desc": "Rebtel subscription (calls to Kenya)", "amt": 5, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t180", "date": "2026-11-30", "type": "out", "cat": "Rent", "desc": "Rent, Hamm room (first month)", "amt": 300, "cur": "EUR", "status": "Planned", "method": "", "note": ""}, {"id": "t181", "date": "2026-11-30", "type": "out", "cat": "Miscellaneous", "desc": "Deposit, Hamm room", "amt": 150, "cur": "EUR", "status": "Planned", "method": "", "note": ""}, {"id": "t182", "date": "2026-11-14", "type": "out", "cat": "Miscellaneous", "desc": "Beer for the weekend", "amt": 2.48, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t183", "date": "2026-11-13", "type": "out", "cat": "Miscellaneous", "desc": "Winter shoes (37.98 including 2.99 shipping)", "amt": 37.98, "cur": "EUR", "status": "Paid", "method": "Klarna", "note": ""}, {"id": "t184", "date": "2026-11-14", "type": "out", "cat": "Miscellaneous", "desc": "Sent to Daprat", "amt": 5, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t185", "date": "2026-11-15", "type": "out", "cat": "Miscellaneous", "desc": "Beer", "amt": 5.5, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t186", "date": "2026-11-18", "type": "out", "cat": "Miscellaneous", "desc": "Library due fee", "amt": 1.5, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t187", "date": "2026-11-19", "type": "out", "cat": "Food", "desc": "Energy drink", "amt": 2.84, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t188", "date": "2026-11-19", "type": "out", "cat": "Miscellaneous", "desc": "Beer", "amt": 5.26, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t189", "date": "2026-11-20", "type": "in", "cat": "Wages", "desc": "Helpling job (expected pay)", "amt": 45.6, "cur": "EUR", "status": "Planned", "method": "Wise", "note": ""}, {"id": "t190", "date": "2026-11-20", "type": "out", "cat": "Miscellaneous", "desc": "Beer", "amt": 5.42, "cur": "EUR", "status": "Paid", "method": "", "note": ""}, {"id": "t191", "date": "2026-11-20", "type": "out", "cat": "Miscellaneous", "desc": "Clothes", "amt": 14, "cur": "EUR", "status": "Paid", "method": "", "note": ""}], "seq": 1200, "patch": {"cards": [{"id": "c193", "b": "prio", "l": "prio_0", "t": "Visit the house in Meden for a viewing", "d": "This weekend (Saturday 28 or Sunday 29 Nov). Set the exact day and time once confirmed.", "due": "2026-11-28", "labels": ["Housing"], "cl": [], "done": false, "f": {}}, {"id": "c194", "b": "prio", "l": "prio_0", "t": "Return the book to the library", "d": "Library due fees already cost 1.50 EUR once.", "due": "2026-12-11", "labels": ["Errands"], "cl": [], "done": false, "f": {}}, {"id": "c195", "b": "jobs", "l": "jobs_4", "t": "G3", "d": "11:00 to 19:30 (8.5 h planned). Arrived 49 minutes late, so about 7 h 41 min worked.", "due": "2026-11-24", "labels": ["Shift"], "cl": [], "done": true, "f": {"jtype": "Shift", "wage": 15.33, "hours": 7.68, "paid": 0}}, {"id": "c196", "b": "jobs", "l": "jobs_3", "t": "G3", "d": "11:00 to 19:30. Be on time.", "due": "2026-11-27", "labels": ["Shift"], "cl": [], "done": false, "f": {"jtype": "Shift", "wage": 15.33, "hours": 8.5, "paid": 0}}, {"id": "c197", "b": "fun", "l": "fun_1", "t": "PUBG", "d": "", "due": "", "labels": ["Game"], "cl": [], "done": false, "f": {"budget": 0, "sessions": []}}, {"id": "c198", "b": "fun", "l": "fun_1", "t": "Chess", "d": "", "due": "", "labels": ["Game"], "cl": [], "done": false, "f": {"budget": 0, "sessions": []}}, {"id": "c199", "b": "fun", "l": "fun_1", "t": "Top Eleven", "d": "", "due": "", "labels": ["Game"], "cl": [], "done": false, "f": {"budget": 0, "sessions": []}}], "boards": [{"id": "fun", "name": "Entertainment", "kind": "fun", "hue": 320, "lists": [{"id": "fun_0", "name": "Podcasts", "done": 0}, {"id": "fun_1", "name": "Games", "done": 0}, {"id": "fun_2", "name": "Watch & listen later", "done": 0}]}]}};
+const KEY='sharmans-project-v1';
+const I={
+ plus:'<svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>',
+ search:'<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>',
+ gear:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>',
+ check:'<svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>',
+ cal:'<svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
+ list:'<svg viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01"/></svg>',
+ note:'<svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>',
+ dots:'<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></svg>',
+ x:'<svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+ left:'<svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>',
+ right:'<svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg>',
+ shark:'<svg viewBox="0 0 24 24"><path d="M2 18c4 0 6-2 8-7 1-3 3-6 6-8 0 4 1 6 3 8 1.5 1.5 3 2 3 2-3 1-6 1-8 1-4 0-7 2-12 4z"/></svg>',
+};
+const CATS=['Wages','Other income','Rent','Food','Transport','Tuition','Books','Phone','Utilities','Health','Insurance','Debt repayment','Savings','Miscellaneous'];
+const CATCOL={Wages:'#1f8a4c','Other income':'#4aa66b',Rent:'#3b6fd1',Food:'#e08a1e',Transport:'#7a5cc8',Tuition:'#0e8a8a',Books:'#a05a2c',Phone:'#2b9bd6',Utilities:'#c9a100',Health:'#d1495b',Insurance:'#8a6d9e',['Debt repayment']:'#c23b3b',Savings:'#2e9e9e',Miscellaneous:'#7a8b99'};
+const LABCOL=['#0e8a8a','#3b6fd1','#7a5cc8','#d1495b','#e08a1e','#2e9e6a','#a05a2c','#5b7083'];
+const hashCol=s=>{let h=0;for(const c of s)h=(h*31+c.charCodeAt(0))>>>0;return LABCOL[h%LABCOL.length]};
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ---------- state ---------- */
+let S, view='home', storageOK=true, monthOff=0, txFilter='all', q='';
+function load(){
+  try{const r=localStorage.getItem(KEY); if(r){S=JSON.parse(r)}}catch(e){storageOK=false}
+  if(!S)S=JSON.parse(JSON.stringify(SEED));
+  migrate();rollShifts();
+}
+function migrate(){
+  if((S.v||1)>=SEED.v)return;
+  const P=JSON.parse(JSON.stringify(SEED.patch));
+  for(const b of P.boards)if(!S.boards.find(x=>x.id===b.id))S.boards.push(b);
+  for(const c of P.cards)if(!S.cards.find(x=>x.id===c.id)&&S.boards.find(b=>b.id===c.b)){
+    const b=S.boards.find(x=>x.id===c.b);
+    if(!b.lists.find(l=>l.id===c.l)){const sl=SEED.boards.find(x=>x.id===c.b).lists.find(l=>l.id===c.l);if(sl)b.lists.push(sl)}
+    S.cards.push(c)}
+  S.v=SEED.v;save();
+}
+/* a booked shift whose date has passed moves itself to Shift done */
+function rollShifts(){
+  const b=S.boards.find(x=>x.id==='jobs');if(!b)return;
+  const bk=b.lists.find(l=>l.name==='Shift booked'),dn=b.lists.find(l=>l.name==='Shift done');if(!bk||!dn)return;
+  let ch=false;
+  for(const c of S.cards)if(c.b==='jobs'&&c.l===bk.id&&c.due&&c.f.jtype==='Shift'&&c.due<today()){c.l=dn.id;c.done=true;ch=true}
+  if(ch)save();
+}
+let saveT;
+function save(){
+  clearTimeout(saveT);saveT=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){storageOK=false}},120);
+}
+const uid=p=>p+(S.seq=(S.seq||5000)+1)+Math.random().toString(36).slice(2,5);
+const today=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
+const dayDiff=iso=>Math.round((new Date(iso+'T00:00:00')-new Date(today()+'T00:00:00'))/864e5);
+const rateOf=c=>c==='EUR'?1:c==='KES'?S.settings.rate:c==='USD'?1.14:c==='GBP'?0.844:1;
+const toEUR=(a,c)=>(+a||0)/rateOf(c||'EUR');
+const fmt=(n,d=2)=>(+n).toLocaleString('en-GB',{minimumFractionDigits:d,maximumFractionDigits:d});
+const eur=n=>(n<0?'-':'')+'€'+fmt(Math.abs(n));
+const money=(a,c)=>c==='EUR'||!c?eur(a):(c==='KES'?'KSh ':c+' ')+fmt(a,0);
+const fmtDate=iso=>iso?new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}):'';
+const fmtShort=iso=>iso?new Date(iso+'T00:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'}):'';
+const B=id=>S.boards.find(b=>b.id===id);
+const cardsOf=(b,l)=>S.cards.filter(c=>c.b===b&&(!l||c.l===l));
+const debtLeft=c=>Math.max(0,(+c.f.amount||0)+(+c.f.extra||0)-(c.f.pays||[]).reduce((s,p)=>s+(+p.amt||0),0));
+function isDone(c){return !!c.done}
+function dueBadge(c){
+  if(!c.due)return '';
+  const d=dayDiff(c.due);
+  if(c.done)return `<span class="badge">${I.cal}${fmtShort(c.due)}</span>`;
+  const cls=d<0?'late':d<=3?'soon':'';
+  const txt=d<0?`${-d}d overdue`:d===0?'Today':d===1?'Tomorrow':fmtShort(c.due);
+  return `<span class="badge ${cls}">${I.cal}${txt}</span>`;
+}
+function relDue(c){const d=dayDiff(c.due);return d<0?`${-d} day${d===-1?'':'s'} overdue`:d===0?'Today':d===1?'Tomorrow':`In ${d} days`}
+
+/* ---------- derived numbers ---------- */
+function monthKey(off=0){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+off);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+function monthTx(off){const k=monthKey(off);return S.tx.filter(t=>t.date.startsWith(k))}
+function totals(list){
+  let inn=0,out=0,pin=0,pout=0;
+  for(const t of list){const e=toEUR(t.amt,t.cur);
+    if(t.status==='Paid'){t.type==='in'?inn+=e:out+=e}else{t.type==='in'?pin+=e:pout+=e}}
+  return{inn,out,pin,pout};
+}
+function cash(){let c=+S.settings.opening||0;for(const t of S.tx){if(t.status!=='Paid')continue;const e=toEUR(t.amt,t.cur);c+=t.type==='in'?e:-e}return c}
+function debtTotals(){let eurLeft=0,open=0,paid=0;for(const c of cardsOf('debts')){const l=debtLeft(c);eurLeft+=toEUR(l,c.f.cur);if(l>0)open++;paid+=toEUR((c.f.pays||[]).reduce((s,p)=>s+(+p.amt||0),0),c.f.cur)}return{eurLeft,open,paid}}
+function weekStart(){const d=new Date();const wd=(d.getDay()+6)%7;d.setDate(d.getDate()-wd);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function funMin(c){const w=weekStart();return (c.f.sessions||[]).filter(s=>s.date>=w).reduce((a,s)=>a+(+s.min||0),0)}
+function funWeek(){let m=0,bud=0;for(const c of cardsOf('fun')){m+=funMin(c);bud+=(+c.f.budget||0)}return{m,bud}}
+const hm=m=>m>=60?`${Math.floor(m/60)} h ${m%60?String(Math.round(m%60)).padStart(2,'0')+' min':''}`.trim():`${Math.round(m)} min`;
+function workStats(){
+  const days=new Set();let hrsDone=0,hrsBooked=0,gross=0;
+  for(const c of cardsOf('jobs')){if(c.f.jtype!=='Shift')continue;
+    const lst=B('jobs').lists.find(l=>l.id===c.l);
+    const booked=lst&&lst.name==='Shift booked', done=lst&&lst.name==='Shift done';
+    if(!(booked||done))continue;
+    if(c.due)days.add(c.due);
+    const h=+c.f.hours||0; done?hrsDone+=h:hrsBooked+=h; gross+=h*(+c.f.wage||0);
+  }
+  return{days:days.size,hrsDone,hrsBooked,gross};
+}
+
+/* ---------- render ---------- */
+function setView(v){view=v;q='';render();}
+function render(){
+  const bs=S.boards;
+  const hue=view==='home'?205:view==='money'?172:(B(view)?.hue??205);
+  document.body.style.setProperty('--hue',hue);
+  const tabs=[['home','Home'],['money','Money'],...bs.map(b=>[b.id,b.name])];
+  const openCount=b=>{const x=cardsOf(b).filter(c=>!c.done).length;return x};
+  $('#app').innerHTML=`
+  <div class="top">
+    <div class="brand"><div class="logo">${I.shark}</div><span class="t">Sharman's Project</span></div>
+    <div class="spacer"></div>
+    <div class="search">${I.search}<input id="q" placeholder="Search everything" autocomplete="off"><div id="res"></div></div>
+    <button class="tbtn" id="setb" title="Settings and backup">${I.gear}</button>
+  </div>
+  <div class="tabs">${tabs.map(([id,n])=>`<button class="tab ${view===id?'on':''}" data-v="${id}">${esc(n)}${B(id)&&B(id).kind!=='course'?`<span class="n">${openCount(id)}</span>`:''}</button>`).join('')}</div>
+  <div class="stage" id="stage"></div>
+  <button class="fab" id="fab">${I.plus}<span>Add money</span></button>`;
+  document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>setView(t.dataset.v));
+  $('#fab').onclick=()=>txModal();
+  $('#setb').onclick=settingsModal;
+  const qi=$('#q');qi.oninput=()=>doSearch(qi.value);
+  if(view==='home')renderHome();else if(view==='money')renderMoney();else renderBoard(B(view));
+  const act=document.querySelector('.tab.on');if(act)act.scrollIntoView({inline:'center',block:'nearest'});
+}
+function doSearch(v){
+  const r=$('#res');v=v.trim().toLowerCase();if(!v){r.innerHTML='';return}
+  const hits=[];
+  for(const c of S.cards){if((c.t+' '+c.d+' '+c.labels.join(' ')).toLowerCase().includes(v))hits.push(`<button data-c="${c.id}">${esc(c.t)}<small>${esc(B(c.b).name)}</small></button>`)}
+  for(const t of S.tx){if((t.desc+' '+t.cat).toLowerCase().includes(v))hits.push(`<button data-t="${t.id}">${esc(t.desc)}<small>Money · ${fmtDate(t.date)} · ${money(t.amt,t.cur)}</small></button>`)}
+  r.innerHTML=`<div class="results">${hits.slice(0,25).join('')||'<div class="empty">Nothing found</div>'}</div>`;
+  r.querySelectorAll('[data-c]').forEach(b=>b.onclick=()=>{const c=S.cards.find(x=>x.id===b.dataset.c);view=c.b;render();cardModal(c.id)});
+  r.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>{view='money';render();txModal(b.dataset.t)});
+}
+
+/* ---------- HOME ---------- */
+function renderHome(){
+  const md=S.settings.moveDate, daysMove=dayDiff(md);
+  const dt=debtTotals(), mt=totals(monthTx(0)), ws=workStats();
+  const goals=cardsOf('goals'), gT=goals.reduce((s,c)=>s+(+c.f.target||0),0), gS=goals.reduce((s,c)=>s+Math.min(+c.f.saved||0,+c.f.target||1e9),0);
+  const courses=cardsOf('soest'), cp=courses.filter(c=>c.done).length;
+  const oku=cardsOf('ouk'), op=oku.filter(c=>c.done).length;
+  const upcoming=S.cards.filter(c=>c.due&&!c.done&&c.b!=='soest'&&c.b!=='ouk'&&dayDiff(c.due)<=45).sort((a,b)=>a.due.localeCompare(b.due)).slice(0,9);
+  const openPrio=cardsOf('prio').filter(c=>!c.done).slice(0,6);
+  const h=new Date().getHours(), g=h<12?'Good morning':h<18?'Good afternoon':'Good evening';
+  const tile=(k,v,s,go,cls='')=>`<button class="tile" ${go?`data-go="${go}"`:''}><div class="k">${k}</div><div class="v ${cls}">${v}</div><div class="s">${s}</div></button>`;
+  $('#stage').innerHTML=`<div class="panel"><div class="wrap">
+    <div class="hello"><h1>${g}, ${esc(S.settings.name)}</h1><p>${new Date().toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})}</p></div>
+    <div class="grid">
+      ${tile('Cash on hand (est.)',eur(cash()),'Paid money in minus money out','money',cash()<0?'bad':'')}
+      ${tile('This month',eur(mt.inn-mt.out),`In ${eur(mt.inn)} · Out ${eur(mt.out)}`,'money',mt.inn-mt.out<0?'bad':'good')}
+      ${tile('Debt left',eur(dt.eurLeft),`${dt.open} open · KSh ${fmt(dt.eurLeft*S.settings.rate,0)}`,'debts','bad')}
+      ${tile('Days to move',daysMove>=0?daysMove:'Done',daysMove>=0?fmtDate(md):'Moving date passed','move')}
+      ${tile('Work days used',`${ws.days} / ${S.settings.workLimit}`,`${fmt(ws.hrsDone,1)} h worked · ${fmt(ws.hrsBooked,1)} h booked`,'jobs')}
+      ${tile('Savings goals',gT?Math.round(gS/gT*100)+'%':'0%',`${eur(gS)} of ${eur(gT)}`,'goals')}
+      ${B('fun')?tile('Play time this week',hm(funWeek().m),funWeek().bud?`of ${funWeek().bud} h you set for the week`:'Set a weekly limit on each game','fun'):''}
+      ${tile('Studies: Soest',`${cp} / ${courses.length}`,'courses passed','soest')}
+      ${tile('Studies: OUK',`${op} / ${oku.length}`,'units passed','ouk')}
+    </div>
+    <div class="cols">
+      <div class="sec"><h2>Coming up</h2>
+        ${upcoming.length?upcoming.map(c=>`<button class="row-item" data-c="${c.id}"><span class="dot" style="background:${dayDiff(c.due)<0?'var(--bad)':dayDiff(c.due)<=3?'var(--warn)':'var(--accent)'}"></span><span class="grow"><b>${esc(c.t)}</b><small>${esc(B(c.b).name)} · ${fmtDate(c.due)}</small></span><span class="badge ${dayDiff(c.due)<0?'late':dayDiff(c.due)<=3?'soon':''}">${relDue(c)}</span></button>`).join(''):'<div class="empty">Nothing due in the next 45 days.</div>'}
+      </div>
+      <div class="sec"><h2>Open priorities <button class="btn sm" data-go="prio">Open board</button></h2>
+        ${openPrio.length?openPrio.map(c=>`<div class="row-item" data-c="${c.id}" style="cursor:pointer"><button class="chk" data-chk="${c.id}" aria-label="Mark done">${I.check}</button><span class="grow"><b>${esc(c.t)}</b></span></div>`).join(''):'<div class="empty">All clear.</div>'}
+      </div>
+    </div>
+    <div class="sec" style="margin-top:12px"><h2>Spending this month</h2>${catBars(monthTx(0),'out')}</div>
+    <p class="hint" style="color:rgba(255,255,255,.8);margin-top:14px">${storageOK?'Everything saves automatically on this device. Use the gear icon to back up.':'Saving is switched off in this browser view. Download a backup from the gear icon before closing.'}</p>
+  </div></div>`;
+  document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>setView(b.dataset.go));
+  document.querySelectorAll('[data-c]').forEach(b=>b.onclick=e=>{if(e.target.closest('[data-chk]'))return;cardModal(b.dataset.c)});
+  document.querySelectorAll('[data-chk]').forEach(b=>b.onclick=e=>{e.stopPropagation();toggleDone(b.dataset.chk)});
+}
+function catBars(list,type){
+  const m={};for(const t of list){if(t.type!==type||t.status!=='Paid')continue;m[t.cat]=(m[t.cat]||0)+toEUR(t.amt,t.cur)}
+  const rows=Object.entries(m).sort((a,b)=>b[1]-a[1]);const max=rows[0]?.[1]||1;
+  if(!rows.length)return '<div class="empty">No paid entries this month yet.</div>';
+  return rows.map(([c,v])=>`<div class="catbar"><span class="nm">${esc(c)}</span><span class="tr"><i style="width:${v/max*100}%;background:${CATCOL[c]||'#7a8b99'}"></i></span><span class="vv">${eur(v)}</span></div>`).join('');
+}
+
+/* ---------- MONEY ---------- */
+function renderMoney(){
+  const k=monthKey(monthOff);const d=new Date(k+'-01T00:00:00');
+  const list=S.tx.filter(t=>t.date.startsWith(k)&&(txFilter==='all'||(txFilter==='planned'?t.status==='Planned':t.type===txFilter))).sort((a,b)=>b.date.localeCompare(a.date));
+  const T=totals(S.tx.filter(t=>t.date.startsWith(k)));
+  const days={};for(const t of list)(days[t.date]=days[t.date]||[]).push(t);
+  $('#stage').innerHTML=`<div class="panel"><div class="wrap">
+    <div class="monthnav"><button class="tbtn" id="mp">${I.left}</button><h1>${d.toLocaleDateString('en-GB',{month:'long',year:'numeric'})}</h1><button class="tbtn" id="mn">${I.right}</button>
+      <span class="spacer"></span>
+      <div class="seg">${[['all','All'],['in','In'],['out','Out'],['planned','Planned']].map(([v,n])=>`<button data-f="${v}" class="${txFilter===v?'on':''}">${n}</button>`).join('')}</div></div>
+    <div class="grid">
+      <div class="tile"><div class="k">Income</div><div class="v good">${eur(T.inn)}</div><div class="s">${T.pin?`+ ${eur(T.pin)} expected`:'Received'}</div></div>
+      <div class="tile"><div class="k">Spent</div><div class="v">${eur(T.out)}</div><div class="s">${T.pout?`+ ${eur(T.pout)} planned`:'Paid out'}</div></div>
+      <div class="tile"><div class="k">Left this month</div><div class="v ${T.inn-T.out<0?'bad':'good'}">${eur(T.inn-T.out)}</div><div class="s">${eur(T.inn+T.pin-T.out-T.pout)} after planned items</div></div>
+      <div class="tile"><div class="k">Cash on hand</div><div class="v">${eur(cash())}</div><div class="s">All time, paid items only</div></div>
+    </div>
+    <div class="cols">
+      <div class="sec"><h2>Transactions <button class="btn sm p" id="addtx">Add</button></h2>
+        ${list.length?Object.keys(days).map(dd=>`<div class="txday">${new Date(dd+'T00:00:00').toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})}</div>${days[dd].map(t=>`<button class="row-item" data-t="${t.id}"><span class="dot" style="background:${CATCOL[t.cat]||'#7a8b99'}"></span><span class="grow"><b>${esc(t.desc||t.cat)}</b><small>${esc(t.cat)}${t.method?' · '+esc(t.method):''}${t.status==='Planned'?' · Planned':''}</small></span><span class="txamt ${t.type}">${t.type==='in'?'+':'-'}${money(t.amt,t.cur)}</span></button>`).join('')}`).join(''):'<div class="empty">No entries. Tap Add money to record one.</div>'}
+      </div>
+      <div class="sec"><h2>Where it went</h2>${catBars(S.tx.filter(t=>t.date.startsWith(k)),'out')}</div>
+    </div>
+  </div></div>`;
+  $('#mp').onclick=()=>{monthOff--;renderMoney()};$('#mn').onclick=()=>{monthOff++;renderMoney()};
+  document.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{txFilter=b.dataset.f;renderMoney()});
+  $('#addtx').onclick=()=>txModal();
+  document.querySelectorAll('[data-t]').forEach(b=>b.onclick=()=>txModal(b.dataset.t));
+}
+
+/* ---------- BOARD ---------- */
+function cardHTML(c,b){
+  const k=b.kind,f=c.f;let body='',chk=true;
+  if(k==='debt'){chk=false;const left=debtLeft(c),tot=(+f.amount||0)+(+f.extra||0),p=tot?(tot-left)/tot*100:0;
+    body=`<div class="amt"><span>${left>0?money(left,f.cur):'Cleared'}</span><small>${f.cur!=='EUR'&&left>0?'≈ '+eur(toEUR(left,f.cur)):''}</small></div><div class="bar ${left<=0?'green':''}"><i style="width:${p}%"></i></div>`;}
+  if(k==='goal'){chk=false;const p=f.target?Math.min(100,(+f.saved||0)/f.target*100):0;
+    body=`<div class="amt"><span>${eur(+f.saved||0)}</span><small>of ${f.target?eur(f.target):'no target'}</small></div><div class="bar ${p>=100?'green':''}"><i style="width:${p}%"></i></div>`;}
+  if(k==='job'&&f.jtype==='Shift'){const est=(+f.hours||0)*(+f.wage||0);body=`<div class="meta">${f.hours?`<span class="badge">${f.hours} h</span>`:''}${f.wage?`<span class="badge">€${f.wage}/h</span>`:''}${est?`<span class="badge ok">≈ ${eur(est)}</span>`:''}</div>`}
+  if(k==='bill'&&f.amount){body=`<div class="amt"><span>${money(f.amount,f.cur)}</span><small>${f.cur!=='EUR'?'≈ '+eur(toEUR(f.amount,f.cur)):''}</small></div>`}
+  if(k==='fun'){chk=false;const m=funMin(c),bud=(+f.budget||0)*60;
+    body=`<div class="amt"><span>${hm(m)}</span><small>${bud?'of '+f.budget+' h this week':'this week'}</small></div>${bud?`<div class="bar ${m>bud?'':''}" ><i style="width:${Math.min(100,m/bud*100)}%;${m>bud?'background:var(--bad)':''}"></i></div>`:''}`;}
+  if(k==='course'){body=f.grade||f.status==='Current'?`<div class="meta">${f.status==='Current'?'<span class="badge soon">Current</span>':''}${f.grade?`<span class="badge ok">Grade ${esc(f.grade)}</span>`:''}${f.exam?`<span class="badge">${I.cal}${fmtShort(f.exam)}</span>`:''}</div>`:''}
+  const cl=c.cl.length?`<span class="badge ${c.cl.every(x=>x.d)?'ok':''}">${I.list}${c.cl.filter(x=>x.d).length}/${c.cl.length}</span>`:'';
+  const metaBits=[(k==='course'||k==='debt'||k==='goal'||(k==='job'&&f.jtype==='Shift')&&false)?'':'',dueBadge(c),c.d?`<span class="badge">${I.note}</span>`:'',cl].join('');
+  const chips=c.labels.length?`<div class="chips">${c.labels.map(l=>`<span class="chip" style="background:${hashCol(l)}">${esc(l)}</span>`).join('')}</div>`:'';
+  return `<div class="card ${c.done?'isdone':''}" draggable="true" data-id="${c.id}">${chips}<div class="crow">${chk?`<button class="chk ${c.done?'on':''}" data-chk="${c.id}" aria-label="Toggle done">${I.check}</button>`:''}<div class="ct">${esc(c.t)}</div></div>${body}${metaBits.trim()?`<div class="meta">${metaBits}</div>`:''}</div>`;
+}
+function renderBoard(b){
+  const sub={debt:`${debtTotals().open} open · ${eur(debtTotals().eurLeft)} left`,goal:'Add savings on each card',job:'Drag cards as things progress',course:'Tick the circle when a course is passed',fun:'Log your time on each card so you can see the week',task:'Drag cards between lists',bill:'Sorted by what you add; due dates show colour',book:''}[b.kind]||'';
+  $('#stage').innerHTML=`<div class="boardhead"><h1>${esc(b.name)}</h1><span class="sub">${sub}</span></div>
+  <div class="board" id="bd">${b.lists.map(l=>{const cs=cardsOf(b.id,l.id);
+    const sorted=(b.kind==='bill')?cs.slice().sort((x,y)=>(x.due||'9').localeCompare(y.due||'9')):cs;
+    return `<div class="list" data-l="${l.id}"><div class="lh"><h3 data-ren="${l.id}">${esc(l.name)}</h3>${l.done?`<span class="done-mark" title="Cards dropped here count as done">${I.check}</span>`:''}<span class="cnt">${cs.length}</span><button class="iconbtn" data-lm="${l.id}">${I.dots}</button></div>
+    <div class="cards" data-drop="${l.id}">${sorted.map(c=>cardHTML(c,b)).join('')}</div>
+    <div data-comp="${l.id}"><button class="add" data-add="${l.id}">${I.plus} Add a card</button></div></div>`}).join('')}
+    <div class="newlist"><button class="ghost" id="nl">${I.plus} Add another list</button></div></div>`;
+  wireBoard(b);
+}
+function wireBoard(b){
+  const bd=$('#bd');
+  bd.querySelectorAll('.card').forEach(el=>{
+    el.onclick=e=>{if(e.target.closest('[data-chk]'))return;cardModal(el.dataset.id)};
+    el.ondragstart=e=>{e.dataTransfer.setData('text/plain',el.dataset.id);el.classList.add('dragging')};
+    el.ondragend=()=>{el.classList.remove('dragging');bd.querySelectorAll('.over').forEach(x=>x.classList.remove('over'))};
+  });
+  bd.querySelectorAll('[data-chk]').forEach(el=>el.onclick=e=>{e.stopPropagation();toggleDone(el.dataset.chk)});
+  bd.querySelectorAll('[data-drop]').forEach(z=>{
+    z.ondragover=e=>{e.preventDefault();z.classList.add('over')};
+    z.ondragleave=()=>z.classList.remove('over');
+    z.ondrop=e=>{e.preventDefault();z.classList.remove('over');
+      const id=e.dataTransfer.getData('text/plain');const c=S.cards.find(x=>x.id===id);if(!c)return;
+      const after=[...z.querySelectorAll('.card:not(.dragging)')].find(el=>{const r=el.getBoundingClientRect();return e.clientY<r.top+r.height/2});
+      moveCard(c,z.dataset.drop,after?after.dataset.id:null);};
+  });
+  bd.querySelectorAll('[data-add]').forEach(btn=>btn.onclick=()=>composer(btn.dataset.add,b));
+  bd.querySelectorAll('[data-lm]').forEach(btn=>btn.onclick=e=>listMenu(e,btn.dataset.lm,b));
+  bd.querySelectorAll('[data-ren]').forEach(h=>h.onclick=()=>renameList(h.dataset.ren,b));
+  $('#nl').onclick=()=>{const w=$('#nl').parentElement;w.innerHTML=`<input id="nli" placeholder="List name" maxlength="40"><div class="composer" style="margin:8px 0 0"><div class="row"><button class="btn p sm" id="nls">Add list</button><button class="btn sm" id="nlc">Cancel</button></div></div>`;const i=$('#nli');i.focus();
+    const go=()=>{const v=i.value.trim();if(v){b.lists.push({id:uid('l'),name:v,done:false});save()}renderBoard(b)};
+    $('#nls').onclick=go;$('#nlc').onclick=()=>renderBoard(b);i.onkeydown=e=>{if(e.key==='Enter')go();if(e.key==='Escape')renderBoard(b)}};
+}
+function moveCard(c,listId,beforeId){
+  const b=B(c.b),l=b.lists.find(x=>x.id===listId);
+  S.cards=S.cards.filter(x=>x!==c);c.l=listId;
+  if(b.kind!=='course'&&b.kind!=='debt'&&b.kind!=='goal')c.done=!!l.done;
+  if(b.kind==='debt'&&l.done&&debtLeft(c)>0){/* manual clear: record the rest */ const left=debtLeft(c);(c.f.pays=c.f.pays||[]).push({date:today(),amt:left})}
+  if(b.kind==='goal'&&l.done&&c.f.target)c.f.saved=Math.max(+c.f.saved||0,+c.f.target);
+  const idx=beforeId?S.cards.findIndex(x=>x.id===beforeId):-1;
+  if(idx>=0)S.cards.splice(idx,0,c);else S.cards.push(c);
+  save();render();
+}
+function autoFile(c){ /* debts and goals sort themselves by balance */
+  const b=B(c.b);
+  if(b.kind==='debt'){const dn=b.lists.find(l=>l.done),op=b.lists.find(l=>!l.done);c.done=debtLeft(c)<=0.005;c.l=c.done?dn.id:op.id}
+  if(b.kind==='goal'){const dn=b.lists.find(l=>l.done),op=b.lists.find(l=>!l.done);c.done=!!c.f.target&&(+c.f.saved||0)>=c.f.target;c.l=c.done?dn.id:op.id}
+}
+function toggleDone(id){
+  const c=S.cards.find(x=>x.id===id),b=B(c.b);
+  c.done=!c.done;
+  if(b.kind==='course')c.f.status=c.done?'Passed':(c.f.status==='Passed'?'Planned':c.f.status);
+  else{ const dn=b.lists.find(l=>l.done);
+    if(c.done&&dn){c.l=dn.id}
+    else if(!c.done&&dn&&c.l===dn.id){const op=b.lists.find(l=>!l.done);if(op)c.l=op.id}}
+  save();render();
+}
+function composer(listId,b){
+  const w=document.querySelector(`[data-comp="${listId}"]`);
+  w.innerHTML=`<div class="composer"><textarea rows="2" placeholder="Card title" id="ct"></textarea><div class="row"><button class="btn p sm" id="cs">Add card</button><button class="btn sm" id="cc">Cancel</button></div></div>`;
+  const t=$('#ct');t.focus();
+  const go=()=>{const v=t.value.trim();if(!v){renderBoard(b);return}
+    const l=b.lists.find(x=>x.id===listId);
+    const f={};if(b.kind==='debt')Object.assign(f,{amount:0,cur:'EUR',extra:0,pays:[]});if(b.kind==='goal')Object.assign(f,{target:0,saved:0});if(b.kind==='job')Object.assign(f,{jtype:'Application',wage:0,hours:0});if(b.kind==='bill')Object.assign(f,{amount:0,cur:'EUR'});if(b.kind==='course')Object.assign(f,{status:'Planned',grade:'',exam:''});if(b.kind==='fun')Object.assign(f,{budget:0,sessions:[]});
+    S.cards.push({id:uid('c'),b:b.id,l:listId,t:v,d:'',due:'',labels:[],cl:[],done:!!l.done&&b.kind!=='debt'&&b.kind!=='goal',f});
+    save();renderBoard(b);composer(listId,b);
+    const bd=$('#bd');};
+  $('#cs').onclick=go;$('#cc').onclick=()=>renderBoard(b);
+  t.onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();go()}if(e.key==='Escape')renderBoard(b)};
+}
+function closeMenu(){document.querySelectorAll('.menu').forEach(m=>m.remove())}
+function listMenu(e,id,b){
+  e.stopPropagation();closeMenu();
+  const r=e.currentTarget.getBoundingClientRect();
+  const m=document.createElement('div');m.className='menu';m.style.top=r.bottom+4+'px';m.style.left=Math.min(r.left,innerWidth-190)+'px';
+  const l=b.lists.find(x=>x.id===id);
+  m.innerHTML=`<button data-a="ren">Rename list</button><button data-a="done">${l.done?'Stop counting as done':'Count cards here as done'}</button><button data-a="del" style="color:var(--bad)">Delete list</button>`;
+  document.body.appendChild(m);
+  m.onclick=ev=>{const a=ev.target.dataset.a;closeMenu();
+    if(a==='ren')renameList(id,b);
+    if(a==='done'){l.done=!l.done;save();render()}
+    if(a==='del'){confirmBox(`Delete the list "${l.name}" and its ${cardsOf(b.id,id).length} cards?`,()=>{S.cards=S.cards.filter(c=>c.l!==id);b.lists=b.lists.filter(x=>x.id!==id);save();render()})}};
+  setTimeout(()=>document.addEventListener('click',closeMenu,{once:true}),0);
+}
+function renameList(id,b){
+  const l=b.lists.find(x=>x.id===id);const h=document.querySelector(`[data-ren="${id}"]`);
+  h.outerHTML=`<input class="inp" id="rn" value="${esc(l.name)}" style="flex:1;font-weight:700">`;const i=$('#rn');i.focus();i.select();
+  const go=()=>{if(i.value.trim())l.name=i.value.trim();save();renderBoard(b)};
+  i.onblur=go;i.onkeydown=e=>{if(e.key==='Enter')i.blur();if(e.key==='Escape'){i.onblur=null;renderBoard(b)}};
+}
+
+/* ---------- modals ---------- */
+function modal(html,onClose){
+  const s=document.createElement('div');s.className='scrim';s.innerHTML=`<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(s);
+  const close=()=>{s.remove();document.removeEventListener('keydown',kd);onClose&&onClose()};
+  const kd=e=>{if(e.key==='Escape')close()};
+  document.addEventListener('keydown',kd);
+  s.onmousedown=e=>{if(e.target===s)close()};
+  s.querySelectorAll('[data-x]').forEach(b=>b.onclick=close);
+  s.close=close;return s;
+}
+function toast(m){const t=document.createElement('div');t.className='toast';t.textContent=m;document.body.appendChild(t);setTimeout(()=>t.remove(),1800)}
+function confirmBox(msg,yes){
+  const s=modal(`<h2>Are you sure?</h2><p>${esc(msg)}</p><div class="foot"><button class="btn" data-x>Cancel</button><button class="btn d" id="yy">Yes, delete</button></div>`);
+  s.querySelector('#yy').onclick=()=>{s.close();yes()};
+}
+function cardModal(id){
+  const c=S.cards.find(x=>x.id===id);if(!c)return;const b=B(c.b),k=b.kind,f=c.f;
+  const allLabels=[...new Set(S.cards.filter(x=>x.b===b.id).flatMap(x=>x.labels))];
+  const dueLabel=k==='job'?'Date':k==='course'?'Due date (optional)':'Due date';
+  const fields=()=>{
+    if(k==='debt')return `<div class="three f"><div><label>Starting amount</label><input type="number" step="any" id="f_amount" value="${f.amount||''}"></div><div><label>Currency</label><select id="f_cur">${['EUR','KES','USD','GBP'].map(x=>`<option ${f.cur===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Interest / fees added</label><input type="number" step="any" id="f_extra" value="${f.extra||''}"></div></div>
+      <div class="f"><label>Left to pay</label><div style="font-size:22px;font-weight:800" id="leftv">${money(debtLeft(c),f.cur)} <small style="font-weight:500;color:var(--ink3)">${f.cur!=='EUR'?'≈ '+eur(toEUR(debtLeft(c),f.cur)):''}</small></div></div>
+      <div class="f"><label>Log a payment</label><div class="three"><input class="inp" type="number" step="any" id="p_amt" placeholder="Amount (${f.cur})"><input class="inp" type="number" step="any" id="p_eur" placeholder="Cost in EUR"><input class="inp" type="date" id="p_date" value="${today()}"></div>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:8px;text-transform:none;letter-spacing:0;font-size:13px"><input type="checkbox" id="p_tx" checked style="width:auto"> Also record it in Money</label>
+      <button class="btn p sm" id="p_go" style="margin-top:8px">Add payment</button>
+      <div class="pays" id="pays">${(f.pays||[]).length?(f.pays).map((p,i)=>`<div class="p"><span>${fmtDate(p.date)}</span><b>${money(p.amt,f.cur)}</b><button class="iconbtn" data-dp="${i}">${I.x}</button></div>`).join(''):'<div class="hint" style="padding:6px 0">No payments yet.</div>'}</div></div>`;
+    if(k==='goal')return `<div class="two f"><div><label>Target (EUR)</label><input type="number" step="any" id="f_target" value="${f.target||''}"></div><div><label>Saved so far (EUR)</label><input type="number" step="any" id="f_saved" value="${f.saved||''}"></div></div>
+      <div class="f"><label>Put money aside</label><div class="two"><input class="inp" type="number" step="any" id="g_add" placeholder="Amount (EUR)"><button class="btn p" id="g_go">Add to savings</button></div></div>`;
+    if(k==='job')return `<div class="three f"><div><label>Type</label><select id="f_jtype">${['Application','Interview / Appointment','Shift'].map(x=>`<option ${f.jtype===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Hourly wage (EUR)</label><input type="number" step="any" id="f_wage" value="${f.wage||''}"></div><div><label>Hours</label><input type="number" step="any" id="f_hours" value="${f.hours||''}"></div></div><div class="hint">Estimated pay: <b>${eur((+f.hours||0)*(+f.wage||0))}</b>. Shifts in the Shift booked and Shift done lists count towards your work days.</div>`;
+    if(k==='bill')return `<div class="two f"><div><label>Amount</label><input type="number" step="any" id="f_amount" value="${f.amount||''}"></div><div><label>Currency</label><select id="f_cur">${['EUR','KES','USD','GBP'].map(x=>`<option ${f.cur===x?'selected':''}>${x}</option>`).join('')}</select></div></div>`;
+    if(k==='course')return `<div class="three f"><div><label>Status</label><select id="f_status">${['Planned','Current','Passed'].map(x=>`<option ${f.status===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Grade</label><input id="f_grade" value="${esc(f.grade)}"></div><div><label>Exam date</label><input type="date" id="f_exam" value="${f.exam||''}"></div></div>`;
+    if(k==='fun'){const ss=(f.sessions||[]).slice().reverse().slice(0,8);return `<div class="two f"><div><label>Weekly limit (hours)</label><input type="number" step="any" id="f_budget" value="${f.budget||''}" placeholder="Leave empty for none"></div><div><label>This week</label><div style="font-size:22px;font-weight:800;padding-top:4px">${hm(funMin(c))}</div></div></div>
+      <div class="f"><label>Log time played or listened</label><div class="three"><input class="inp" type="number" id="fm" placeholder="Minutes"><input class="inp" type="date" id="fd" value="${today()}"><button class="btn p" id="fgo">Log</button></div>
+      <div class="pays">${ss.length?ss.map((x)=>`<div class="p"><span>${fmtDate(x.date)}</span><b>${hm(x.min)}</b><button class="iconbtn" data-fs="${f.sessions.indexOf(x)}">${I.x}</button></div>`).join(''):'<div class="hint" style="padding:6px 0">Nothing logged yet.</div>'}</div></div>`}
+    if(k==='book')return `<div class="f"><label>Author</label><input id="f_author" value="${esc(f.author||'')}"></div>`;
+    return '';
+  };
+  const s=modal(`<button class="iconbtn x" data-x aria-label="Close">${I.x}</button>
+    <div class="hint" style="margin-bottom:2px">${esc(b.name)}</div>
+    <input class="titlein" id="m_t" value="${esc(c.t)}">
+    <div class="two f"><div><label>Move to list</label><select id="m_l">${b.lists.map(l=>`<option value="${l.id}" ${l.id===c.l?'selected':''}>${esc(l.name)}</option>`).join('')}</select></div><div><label>${dueLabel}</label><input type="date" id="m_due" value="${c.due||''}"></div></div>
+    ${fields()}
+    <div class="f"><label>Labels</label><div class="tag-row" id="m_labs"></div><input id="m_newlab" placeholder="Type a label and press Enter" style="margin-top:4px"></div>
+    <div class="f"><label>Notes</label><textarea id="m_d" placeholder="Anything worth remembering">${esc(c.d)}</textarea></div>
+    <div class="f"><label>Checklist</label><div id="m_cl"></div><div style="display:flex;gap:6px;margin-top:4px"><input class="inp" id="m_newcl" placeholder="Add an item"><button class="btn sm" id="m_addcl">Add</button></div></div>
+    <div class="foot"><span style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn d" id="m_del">Delete card</button><button class="btn" id="m_td">Send to Todoist</button></span><button class="btn p" data-x>Done</button></div>`,()=>render());
+  const q=sel=>s.querySelector(sel);
+  const num=id=>{const v=q(id).value;return v===''?0:+v};
+  const drawLabs=()=>{const set=[...new Set([...allLabels,...c.labels])];q('#m_labs').innerHTML=set.map(l=>`<button class="pickchip ${c.labels.includes(l)?'':'off'}" data-lab="${esc(l)}" style="background:${hashCol(l)}">${esc(l)}</button>`).join('');
+    q('#m_labs').querySelectorAll('[data-lab]').forEach(el=>el.onclick=()=>{const l=el.dataset.lab;c.labels=c.labels.includes(l)?c.labels.filter(x=>x!==l):[...c.labels,l];save();drawLabs()})};
+  const drawCl=()=>{q('#m_cl').innerHTML=c.cl.map((x,i)=>`<div class="cli ${x.d?'d':''}"><button class="chk ${x.d?'on':''}" data-ci="${i}">${I.check}</button><input type="text" data-ct="${i}" value="${esc(x.t)}"><button class="iconbtn" data-cd="${i}">${I.x}</button></div>`).join('');
+    q('#m_cl').querySelectorAll('[data-ci]').forEach(el=>el.onclick=()=>{c.cl[+el.dataset.ci].d=!c.cl[+el.dataset.ci].d;save();drawCl()});
+    q('#m_cl').querySelectorAll('[data-ct]').forEach(el=>el.oninput=()=>{c.cl[+el.dataset.ct].t=el.value;save()});
+    q('#m_cl').querySelectorAll('[data-cd]').forEach(el=>el.onclick=()=>{c.cl.splice(+el.dataset.cd,1);save();drawCl()})};
+  drawLabs();drawCl();
+  q('#m_t').oninput=e=>{c.t=e.target.value||'Untitled';save()};
+  q('#m_d').oninput=e=>{c.d=e.target.value;save()};
+  q('#m_due').onchange=e=>{c.due=e.target.value;save()};
+  q('#m_l').onchange=e=>{const l=b.lists.find(x=>x.id===e.target.value);c.l=l.id;if(k!=='course'&&k!=='debt'&&k!=='goal')c.done=!!l.done;save()};
+  q('#m_newlab').onkeydown=e=>{if(e.key==='Enter'&&e.target.value.trim()){const v=e.target.value.trim();if(!c.labels.includes(v))c.labels.push(v);allLabels.push(v);e.target.value='';save();drawLabs()}};
+  const addCl=()=>{const i=q('#m_newcl');if(i.value.trim()){c.cl.push({t:i.value.trim(),d:false});i.value='';save();drawCl()}};
+  q('#m_addcl').onclick=addCl;q('#m_newcl').onkeydown=e=>{if(e.key==='Enter')addCl()};
+  q('#m_td').onclick=()=>{const u='https://todoist.com/add?content='+encodeURIComponent(c.t)+(c.due?'&date='+c.due:'');window.open(u,'_blank','noopener')};
+  q('#m_del').onclick=()=>{s.close();S.cards=S.cards.filter(x=>x!==c);save();render();toast('Card deleted')};
+  const bind=(id,key,conv)=>{const el=q('#'+id);if(!el)return;el.oninput=el.onchange=()=>{f[key]=conv?conv(el.value):el.value;if(k==='debt'||k==='goal')autoFile(c);save();if(k==='debt'){q('#leftv').innerHTML=`${money(debtLeft(c),f.cur)} <small style="font-weight:500;color:var(--ink3)">${f.cur!=='EUR'?'≈ '+eur(toEUR(debtLeft(c),f.cur)):''}</small>`}}};
+  const nv=v=>v===''?0:+v;
+  ['amount','extra','target','saved','wage','hours','budget'].forEach(n=>bind('f_'+n,n,nv));
+  ['cur','jtype','status','grade','exam','author'].forEach(n=>bind('f_'+n,n));
+  if(k==='course'){q('#f_status').addEventListener('change',()=>{c.done=f.status==='Passed';save()})}
+  if(k==='debt'){
+    q('#p_go').onclick=()=>{const a=num('#p_amt');if(!a)return;f.pays=f.pays||[];const date=q('#p_date').value||today();f.pays.push({date,amt:a});
+      if(q('#p_tx').checked){const e=num('#p_eur')||toEUR(a,f.cur);S.tx.push({id:uid('t'),date,type:'out',cat:'Debt repayment',desc:`${c.t} repayment`,amt:+e.toFixed(2),cur:'EUR',status:'Paid',method:'',note:f.cur!=='EUR'?`${money(a,f.cur)} received by the lender`:''})}
+      autoFile(c);save();s.close();cardModal(c.id);toast('Payment added')};
+    q('#pays').querySelectorAll('[data-dp]').forEach(el=>el.onclick=()=>{f.pays.splice(+el.dataset.dp,1);autoFile(c);save();s.close();cardModal(c.id)});
+  }
+  if(k==='fun'){
+    q('#fgo').onclick=()=>{const m=num('#fm');if(!m)return;(f.sessions=f.sessions||[]).push({date:q('#fd').value||today(),min:m});save();s.close();cardModal(c.id);toast('Logged')};
+    s.querySelectorAll('[data-fs]').forEach(el=>el.onclick=()=>{f.sessions.splice(+el.dataset.fs,1);save();s.close();cardModal(c.id)});}
+  if(k==='goal'){q('#g_go').onclick=()=>{const a=num('#g_add');if(!a)return;f.saved=(+f.saved||0)+a;autoFile(c);save();s.close();cardModal(c.id);toast('Savings updated')}}
+}
+
+function txModal(id){
+  const t=id?S.tx.find(x=>x.id===id):{id:null,date:today(),type:'out',cat:'Food',desc:'',amt:'',cur:'EUR',status:'Paid',method:'',note:''};
+  const d={...t};
+  const s=modal(`<button class="iconbtn x" data-x aria-label="Close">${I.x}</button><h2>${id?'Edit entry':'Add money'}</h2>
+    <div class="seg" style="background:#e3e9ee;margin:10px 0"><button type="button" data-ty="out" style="color:var(--ink)">Money out</button><button type="button" data-ty="in" style="color:var(--ink)">Money in</button></div>
+    <div class="f"><input class="inp bigamt" id="x_amt" type="number" step="any" inputmode="decimal" placeholder="0.00" value="${d.amt}"></div>
+    <div class="two f"><div><label>Currency</label><select id="x_cur">${['EUR','KES','USD','GBP'].map(x=>`<option ${d.cur===x?'selected':''}>${x}</option>`).join('')}</select></div><div><label>Date</label><input type="date" id="x_date" value="${d.date}"></div></div>
+    <div class="f"><label>Category</label><div class="catpick" id="x_cats"></div></div>
+    <div class="f"><label>What was it for</label><input id="x_desc" placeholder="e.g. Groceries at ALDI" value="${esc(d.desc)}"></div>
+    <div class="two f"><div><label>Status</label><select id="x_status"><option ${d.status==='Paid'?'selected':''}>Paid</option><option ${d.status==='Planned'?'selected':''}>Planned</option></select></div><div><label>Account</label><input id="x_method" list="accts" placeholder="Wise, N26, cash" value="${esc(d.method)}"><datalist id="accts"><option>Wise<option>N26<option>Targobank<option>ING<option>Klarna<option>Cash<option>M-Pesa</datalist></div></div>
+    <div class="foot">${id?'<button class="btn d" id="x_del">Delete</button>':'<span></span>'}<span style="display:flex;gap:8px"><button class="btn" data-x>Cancel</button><button class="btn p" id="x_save">Save</button></span></div>`);
+  const q=sel=>s.querySelector(sel);
+  const drawType=()=>{s.querySelectorAll('[data-ty]').forEach(b=>{const on=b.dataset.ty===d.type;b.classList.toggle('on',on)});
+    const cats=d.type==='in'?['Wages','Other income','Savings']:CATS.filter(c=>c!=='Wages'&&c!=='Other income');
+    if(!cats.includes(d.cat))d.cat=cats[0];
+    q('#x_cats').innerHTML=cats.map(c=>`<button type="button" class="${d.cat===c?'on':''}" data-c="${c}">${c}</button>`).join('');
+    q('#x_cats').querySelectorAll('button').forEach(b=>b.onclick=()=>{d.cat=b.dataset.c;drawType()})};
+  s.querySelectorAll('[data-ty]').forEach(b=>b.onclick=()=>{d.type=b.dataset.ty;drawType()});
+  drawType();if(!id)q('#x_amt').focus();
+  q('#x_save').onclick=()=>{const a=+q('#x_amt').value;if(!a||a<=0){q('#x_amt').focus();toast('Enter an amount');return}
+    Object.assign(d,{amt:a,cur:q('#x_cur').value,date:q('#x_date').value||today(),desc:q('#x_desc').value.trim()||d.cat,status:q('#x_status').value,method:q('#x_method').value.trim()});
+    if(id)Object.assign(t,d);else{d.id=uid('t');S.tx.push(d)}
+    save();s.close();render();toast(id?'Saved':'Added')};
+  if(id)q('#x_del').onclick=()=>{S.tx=S.tx.filter(x=>x!==t);save();s.close();render();toast('Deleted')};
+  s.querySelectorAll('input').forEach(i=>i.onkeydown=e=>{if(e.key==='Enter')q('#x_save').click()});
+}
+
+function settingsModal(){
+  const st=S.settings;
+  const s=modal(`<button class="iconbtn x" data-x aria-label="Close">${I.x}</button><h2>Settings and backup</h2>
+    <div class="two f"><div><label>Your name</label><input id="s_name" value="${esc(st.name)}"></div><div><label>KSh per €1</label><input id="s_rate" type="number" step="any" value="${st.rate}"></div></div>
+    <div class="two f"><div><label>Moving date</label><input id="s_move" type="date" value="${st.moveDate}"></div><div><label>Yearly work-day limit</label><input id="s_lim" type="number" value="${st.workLimit}"></div></div>
+    <div class="f"><label>Opening cash balance (EUR)</label><input id="s_open" type="number" step="any" value="${st.opening||''}"><div class="hint" style="margin-top:4px">Cash on hand = this number plus every paid entry in Money.</div></div>
+    <div class="f"><label>Backup</label><div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="b_exp">Download backup (JSON)</button><button class="btn" id="b_csv">Money as CSV</button><button class="btn" id="b_imp">Restore from backup</button><input type="file" id="b_file" accept=".json" hidden></div>
+    <div class="hint" style="margin-top:6px">${storageOK?'Your data is stored in this browser on this device. A weekly backup download is a good habit.':'This view cannot store data. Download a backup before closing.'}</div></div>
+    <div class="foot"><button class="btn d" id="b_reset">Reset to starting data</button><button class="btn p" id="s_save">Save</button></div>`);
+  const q=x=>s.querySelector(x);
+  q('#s_save').onclick=()=>{Object.assign(st,{name:q('#s_name').value||'Sharman',rate:+q('#s_rate').value||st.rate,moveDate:q('#s_move').value||st.moveDate,workLimit:+q('#s_lim').value||140,opening:+q('#s_open').value||0});save();s.close();render()};
+  const dl=(name,txt,type)=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type}));a.download=name;document.body.appendChild(a);a.click();a.remove()};
+  q('#b_exp').onclick=()=>dl(`sharmans-project-${today()}.json`,JSON.stringify(S,null,1),'application/json');
+  q('#b_csv').onclick=()=>dl(`money-${today()}.csv`,'Date,Type,Category,Description,Amount,Currency,Status,Account\n'+S.tx.map(t=>[t.date,t.type,t.cat,'"'+String(t.desc).replace(/"/g,'""')+'"',t.amt,t.cur,t.status,t.method].join(',')).join('\n'),'text/csv');
+  q('#b_imp').onclick=()=>q('#b_file').click();
+  q('#b_file').onchange=e=>{const fl=e.target.files[0];if(!fl)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);if(!j.boards||!j.cards)throw 0;S=j;save();s.close();render();toast('Backup restored')}catch(x){toast('That file is not a valid backup')}};r.readAsText(fl)};
+  q('#b_reset').onclick=()=>{s.close();confirmBox('Replace everything with the starting data? Download a backup first if you want to keep your changes.',()=>{S=JSON.parse(JSON.stringify(SEED));save();view='home';render()})};
+}
+
+load();render();
+</script>
+</body>
+</html>
